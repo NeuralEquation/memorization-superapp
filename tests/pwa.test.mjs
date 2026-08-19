@@ -1,0 +1,31 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { APP_VERSION } from "../src/core.js";
+
+const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+
+test("PWA shell and every module edge use one release version", async () => {
+  const [html, sw, app, core, storage, registry] = await Promise.all([
+    read("index.html"), read("sw.js"), read("src/app.js"), read("src/core.js"), read("src/storage.js"), read("src/exercise-registry.js")
+  ]);
+  assert.match(html, new RegExp(`src/app\\.js\\?v=${APP_VERSION}`));
+  assert.match(html, new RegExp(`styles\\.css\\?v=${APP_VERSION}`));
+  assert.match(sw, new RegExp(`memory-foundry-shell-v${APP_VERSION.replaceAll(".", "\\.")}`));
+  for (const asset of ["app.js", "core.js", "storage.js", "exercise-types.js", "exercise-registry.js", "builtin-packs.json"]) {
+    assert.match(sw, new RegExp(`${asset.replace(".", "\\.")}\\?v=${APP_VERSION.replaceAll(".", "\\.")}`));
+  }
+  for (const source of [app, core, storage, registry]) {
+    for (const match of source.matchAll(/from\s+"(\.\/[^"?]+\.js)([^"]*)"/g)) {
+      assert.equal(match[2], `?v=${APP_VERSION}`, `${match[1]} must be versioned`);
+    }
+  }
+});
+
+test("rating persistence has a synchronous double-submit guard", async () => {
+  const app = await read("src/app.js");
+  assert.match(app, /if \(!session \|\| session\.saving\) return;/);
+  assert.match(app, /activeSession\.saving = true;/);
+  assert.match(app, /button\.disabled = true;/);
+});
+

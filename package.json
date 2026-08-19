@@ -1,0 +1,19 @@
+{
+  "name": "anki-foundry-pwa",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "description": "教材をJSONで追加できるローカルファースト汎用暗記学習PWA",
+  "scripts": {
+    "dev": "py -m http.server 8877 --bind 127.0.0.1",
+    "start": "py -m http.server 8877 --bind 127.0.0.1",
+    "migrate": "node tools/migrate-legacy.mjs",
+    "verify": "node tools/verify-static.mjs",
+    "test": "node --test --test-isolation=none --test-concurrency=1 tests/*.test.mjs",
+    "build": "npm run migrate && npm run verify && npm test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+

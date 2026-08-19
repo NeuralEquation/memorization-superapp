@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#19352d">
+  <meta name="description" content="教材JSONを追加して、弱点を効率よく復習できるローカルファースト暗記学習PWA">
+  <link rel="manifest" href="./manifest.webmanifest?v=1.0.1">
+  <link rel="icon" href="./icons/icon-192.png?v=1.0.1" sizes="192x192">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.1">
+  <link rel="stylesheet" href="./styles.css?v=1.0.1">
+  <title>暗記Foundry</title>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+  <div id="app">
+    <main id="main-content" class="loading-shell">
+      <p class="eyebrow">MEMORY WORKSPACE</p>
+      <h1>暗記Foundry</h1>
+      <p>教材と学習記録を、この端末で準備しています。</p>
+      <div class="loading-bar" aria-label="読み込み中"><span></span></div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="modal" class="modal"></dialog>
+  <noscript>このアプリの利用にはJavaScriptが必要です。</noscript>
+  <script type="module" src="./src/app.js?v=1.0.1"></script>
+</body>
+</html>
+
