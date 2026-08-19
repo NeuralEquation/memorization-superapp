@@ -48,6 +48,7 @@ async function staleWhileRevalidate(request) {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
   if (event.request.mode === "navigate") event.respondWith(networkFirst(event.request));
+  else if (new URL(event.request.url).pathname.endsWith("/data/builtin-packs.json")) event.respondWith(networkFirst(event.request));
   else event.respondWith(staleWhileRevalidate(event.request));
 });
 

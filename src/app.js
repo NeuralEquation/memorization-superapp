@@ -714,6 +714,27 @@ async function registerServiceWorker() {
   }
 }
 
+async function readBuiltinBundle(response) {
+  const raw = await response.text();
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    // Some static hosting/proxy layers prepend a plain-text Warning line to
+    // otherwise valid JSON. Accept only a complete object in that narrow case.
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (raw.trimStart().startsWith("Warning:") && start >= 0 && end > start) {
+      try {
+        return JSON.parse(raw.slice(start, end + 1));
+      } catch {
+        // Fall through with a diagnostic that includes the actual response.
+      }
+    }
+    const prefix = raw.trim().slice(0, 96).replace(/\s+/g, " ");
+    throw new Error(`教材データJSONを読めません (${prefix || error.message})`);
+  }
+}
+
 async function init() {
   try {
     db = await openStorage();
@@ -722,7 +743,7 @@ async function init() {
     try {
       const response = await fetch("./data/builtin-packs.json?v=1.0.1", { cache: "no-cache" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
-      bundle = await response.json();
+      bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");
     } catch (error) {
       if (!snapshot.packs.length) throw error;
