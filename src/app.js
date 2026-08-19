@@ -15,8 +15,8 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.0.1";
-import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.0.1";
+} from "./core.js?v=1.0.2";
+import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.0.2";
 import {
   createBackup,
   deletePackCompletely,
@@ -27,7 +27,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.0.1";
+} from "./storage.js?v=1.0.2";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -701,7 +701,7 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.0.1", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.0.2", { scope: "./" });
     if (registration.waiting) showToast("更新準備完了。アプリを閉じて開き直すと反映されます");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -741,7 +741,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.0.1", { cache: "no-cache" });
+      const response = await fetch("./data/builtin-packs.json?v=1.0.2", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");

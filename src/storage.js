@@ -1,4 +1,4 @@
-import { APP_VERSION, BACKUP_TYPE, SCHEMA_VERSION, progressKey, validateBackup, validatePack } from "./core.js?v=1.0.1";
+import { APP_VERSION, BACKUP_TYPE, SCHEMA_VERSION, progressKey, validateBackup, validatePack } from "./core.js?v=1.0.2";
 
 const DB_NAME = "memory-foundry";
 const DB_VERSION = 1;

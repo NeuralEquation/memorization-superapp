@@ -38,7 +38,7 @@ const assertions = [
   [manifest.start_url === "./", "manifest start_url must stay checkout-relative"],
   [manifest.display === "standalone", "manifest must request standalone display"],
   [Array.isArray(manifest.icons) && manifest.icons.length >= 2, "manifest must include install icons"],
-  [serviceWorker.includes("memory-foundry-shell-v1.0.1"), "service worker cache version is missing"],
+  [serviceWorker.includes("memory-foundry-shell-v1.0.2"), "service worker cache version is missing"],
   [serviceWorker.includes("data/builtin-packs.json"), "service worker must cache built-in data"],
   [bundle.schemaVersion === 1, "built-in bundle schemaVersion must be 1"],
   [Array.isArray(bundle.packs) && bundle.packs.length === 3, "built-in bundle must contain three packs"],
