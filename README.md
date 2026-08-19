@@ -2,19 +2,6 @@
 
 教材を JSON で追加できる、ローカルファーストの暗記学習 PWA です。政経・無機化学・日本国憲法の組み込み教材を初回起動時に端末内へ取り込み、学習記録も同じ端末の IndexedDB に保存します。アカウント、サーバー API、クラウド同期は使用しません。
 
-## 起動
-
-Node.js 18 以上と、`py` コマンドで起動できる Python が必要です。
-
-```powershell
-npm run migrate
-npm run dev
-```
-
-ブラウザーで [http://127.0.0.1:8877/](http://127.0.0.1:8877/) を開きます。Windows では `start-app.bat` または `start-app.ps1` でも同じローカル HTTP サーバーを起動できます。
-
-`file://` で直接開かないでください。ES modules、組み込み教材の `fetch`、Service Worker は localhost または HTTPS が前提です。
-
 ## 利用方法
 
 - **おすすめ**: 未学習・誤答・迷い・期限切れを重み付けして最大20問を出題します。
