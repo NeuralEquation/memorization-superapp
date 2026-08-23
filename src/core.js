@@ -1,7 +1,7 @@
-import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.0.2";
+import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.1.0";
 
 export const SCHEMA_VERSION = 1;
-export const APP_VERSION = "1.0.2";
+export const APP_VERSION = "1.1.0";
 export const PACK_TYPE = "memory-pack";
 export const BACKUP_TYPE = "memory-foundry-backup";
 
@@ -405,4 +405,3 @@ export function downloadJson(filename, value) {
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
-

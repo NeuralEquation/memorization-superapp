@@ -1,17 +1,18 @@
-const CACHE_NAME = "memory-foundry-shell-v1.0.2";
+const CACHE_NAME = "memory-foundry-shell-v1.1.0";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=1.0.2",
-  "./src/app.js?v=1.0.2",
-  "./src/core.js?v=1.0.2",
-  "./src/exercise-types.js?v=1.0.2",
-  "./src/exercise-registry.js?v=1.0.2",
-  "./src/storage.js?v=1.0.2",
-  "./data/builtin-packs.json?v=1.0.2",
-  "./manifest.webmanifest?v=1.0.2",
-  "./icons/icon-192.png?v=1.0.2",
-  "./icons/icon-512.png?v=1.0.2"
+  "./styles.css?v=1.1.0",
+  "./src/app.js?v=1.1.0",
+  "./src/core.js?v=1.1.0",
+  "./src/exercise-types.js?v=1.1.0",
+  "./src/exercise-registry.js?v=1.1.0",
+  "./src/library.js?v=1.1.0",
+  "./src/storage.js?v=1.1.0",
+  "./data/builtin-packs.json?v=1.1.0",
+  "./manifest.webmanifest?v=1.1.0",
+  "./icons/icon-192.png?v=1.1.0",
+  "./icons/icon-512.png?v=1.1.0"
 ];
 
 self.addEventListener("install", event => {
@@ -51,4 +52,3 @@ self.addEventListener("fetch", event => {
   else if (new URL(event.request.url).pathname.endsWith("/data/builtin-packs.json")) event.respondWith(networkFirst(event.request));
   else event.respondWith(staleWhileRevalidate(event.request));
 });
-

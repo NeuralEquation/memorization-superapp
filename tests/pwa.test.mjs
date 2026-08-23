@@ -12,7 +12,7 @@ test("PWA shell and every module edge use one release version", async () => {
   assert.match(html, new RegExp(`src/app\\.js\\?v=${APP_VERSION}`));
   assert.match(html, new RegExp(`styles\\.css\\?v=${APP_VERSION}`));
   assert.match(sw, new RegExp(`memory-foundry-shell-v${APP_VERSION.replaceAll(".", "\\.")}`));
-  for (const asset of ["app.js", "core.js", "storage.js", "exercise-types.js", "exercise-registry.js", "builtin-packs.json"]) {
+  for (const asset of ["app.js", "core.js", "storage.js", "exercise-types.js", "exercise-registry.js", "library.js", "builtin-packs.json"]) {
     assert.match(sw, new RegExp(`${asset.replace(".", "\\.")}\\?v=${APP_VERSION.replaceAll(".", "\\.")}`));
   }
   for (const source of [app, core, storage, registry]) {
@@ -28,4 +28,3 @@ test("rating persistence has a synchronous double-submit guard", async () => {
   assert.match(app, /activeSession\.saving = true;/);
   assert.match(app, /button\.disabled = true;/);
 });
-

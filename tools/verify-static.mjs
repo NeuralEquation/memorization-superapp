@@ -13,6 +13,7 @@ const requiredFiles = [
   "src/storage.js",
   "src/exercise-types.js",
   "src/exercise-registry.js",
+  "src/library.js",
   "data/builtin-packs.json",
   "icons/icon-192.png",
   "icons/icon-512.png",
@@ -38,7 +39,8 @@ const assertions = [
   [manifest.start_url === "./", "manifest start_url must stay checkout-relative"],
   [manifest.display === "standalone", "manifest must request standalone display"],
   [Array.isArray(manifest.icons) && manifest.icons.length >= 2, "manifest must include install icons"],
-  [serviceWorker.includes("memory-foundry-shell-v1.0.2"), "service worker cache version is missing"],
+  [serviceWorker.includes("memory-foundry-shell-v1.1.0"), "service worker cache version is missing"],
+  [serviceWorker.includes("src/library.js?v=1.1.0"), "service worker must cache the library module"],
   [serviceWorker.includes("data/builtin-packs.json"), "service worker must cache built-in data"],
   [bundle.schemaVersion === 1, "built-in bundle schemaVersion must be 1"],
   [Array.isArray(bundle.packs) && bundle.packs.length === 3, "built-in bundle must contain three packs"],
@@ -49,4 +51,3 @@ for (const [condition, message] of assertions) {
 }
 
 console.log(`Static verification passed: ${requiredFiles.length} files, ${bundle.packs.length} packs.`);
-
