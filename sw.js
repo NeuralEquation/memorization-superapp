@@ -1,18 +1,18 @@
-const CACHE_NAME = "memory-foundry-shell-v1.1.0";
+const CACHE_NAME = "memory-foundry-shell-v1.1.4";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=1.1.0",
-  "./src/app.js?v=1.1.0",
-  "./src/core.js?v=1.1.0",
-  "./src/exercise-types.js?v=1.1.0",
-  "./src/exercise-registry.js?v=1.1.0",
-  "./src/library.js?v=1.1.0",
-  "./src/storage.js?v=1.1.0",
-  "./data/builtin-packs.json?v=1.1.0",
-  "./manifest.webmanifest?v=1.1.0",
-  "./icons/icon-192.png?v=1.1.0",
-  "./icons/icon-512.png?v=1.1.0"
+  "./styles.css?v=1.1.4",
+  "./src/app.js?v=1.1.4",
+  "./src/core.js?v=1.1.4",
+  "./src/exercise-types.js?v=1.1.4",
+  "./src/exercise-registry.js?v=1.1.4",
+  "./src/library.js?v=1.1.4",
+  "./src/storage.js?v=1.1.4",
+  "./data/builtin-packs.json?v=1.1.4",
+  "./manifest.webmanifest?v=1.1.4",
+  "./icons/icon-192.png?v=1.1.4",
+  "./icons/icon-512.png?v=1.1.4"
 ];
 
 self.addEventListener("install", event => {

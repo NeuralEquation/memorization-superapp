@@ -1,6 +1,6 @@
 {
   "name": "anki-foundry-pwa",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "private": true,
   "type": "module",
   "description": "教材をJSONで追加できるローカルファースト汎用暗記学習PWA",

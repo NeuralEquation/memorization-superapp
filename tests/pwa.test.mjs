@@ -28,3 +28,10 @@ test("rating persistence has a synchronous double-submit guard", async () => {
   assert.match(app, /activeSession\.saving = true;/);
   assert.match(app, /button\.disabled = true;/);
 });
+
+test("mobile shell prevents study actions and Japanese copy from fragmenting", async () => {
+  const styles = await read("styles.css");
+  assert.match(styles, /word-break:\s*auto-phrase/);
+  assert.match(styles, /\.pack-actions\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*repeat\(2,/);
+  assert.match(styles, /\.pack-actions button[^}]*white-space:\s*nowrap/);
+});

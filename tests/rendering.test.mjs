@@ -10,6 +10,11 @@ test("rich text escapes untrusted HTML while rendering chemistry markup", () => 
   assert.ok(html.includes('<span class="chem">Fe^{3+}</span>'));
 });
 
+test("rich text keeps short parenthetical references together", () => {
+  const html = renderRichText("国民審査（第79条）を答える");
+  assert.ok(html.includes('<span class="no-break">（第79条）</span>'));
+});
+
 test("important renderer outputs include accessible controls", () => {
   const choice = { id: "c", type: "single-choice", payload: { prompt: "問題", options: [{ id: "a", text: "A" }, { id: "b", text: "B" }], correctOptionId: "a" } };
   const input = { id: "i", type: "text-input", payload: { prompt: "問題", acceptedAnswers: ["答え"] } };
@@ -24,4 +29,3 @@ test("feedback keeps confusion traps and related pairs visible", () => {
   assert.ok(html.includes("IBRDと混同しない"));
   assert.ok(html.includes("ブレトンウッズ体制"));
 });
-

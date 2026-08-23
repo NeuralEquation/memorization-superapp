@@ -15,9 +15,9 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.1.0";
-import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.1.0";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.1.0";
+} from "./core.js?v=1.1.4";
+import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.1.4";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.1.4";
 import {
   createBackup,
   deletePackCompletely,
@@ -28,7 +28,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.1.0";
+} from "./storage.js?v=1.1.4";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -80,9 +80,9 @@ function sourceLabel(exercise) {
 
 function descriptionFor(pack) {
   if (pack.description) return pack.description;
-  if (pack.id === "seikei-memorization") return "概念ペアと問題集級の正誤232問を、入力と判断で反復します。";
-  if (pack.id === "inorganic-chemistry") return "選択・複数選択・反応式・短答を、化学表記を保ったまま学習します。";
-  if (pack.id === "constitution-quest") return "条文104本、空欄288問、全文想起を章構造と出典付きで学びます。";
+  if (pack.id === "seikei-memorization") return "概念カード196枚と正誤232問を、検索・反復できます。";
+  if (pack.id === "inorganic-chemistry") return "選択・短答・反応式を、化学表記のまま学習します。";
+  if (pack.id === "constitution-quest") return "条文・穴埋め・全文想起を、章と出典を保って学習します。";
   return "JSONから追加した暗記教材です。";
 }
 
@@ -150,7 +150,7 @@ function renderHome() {
       <div class="hero-copy">
         <p class="eyebrow">CHOOSE. RECALL. STRENGTHEN.</p>
         <h1>今、覚える教材を<br>すぐ始める。</h1>
-        <p>未学習・誤答・迷い・復習期限をまとめて判断し、価値の高い問題から出題します。教材と記録はこの端末内に保存されます。</p>
+        <p>未学習・誤答・迷い・復習期限から、今やる問題を選びます。教材と記録は端末内に保存されます。</p>
       </div>
       <aside class="hero-aside">
         <div><p class="eyebrow">MEMORY SNAPSHOT</p><h2>${nextPack ? "次に取り組むなら" : "教材を追加してください"}</h2>${nextPack ? `<p>${escapeHtml(nextPack.title)}</p>` : ""}</div>
@@ -161,7 +161,7 @@ function renderHome() {
         ${nextPack ? `<button class="primary wide" data-action="start" data-pack-id="${escapeHtml(nextPack.id)}" data-mode="recommended">この教材を始める</button>` : `<button class="primary wide" data-action="navigate" data-view="manage">教材を追加</button>`}
       </aside>
     </section>
-    <div class="section-head"><div><h2>Active教材</h2><p>教材を選ぶと、そのまま学習を開始できます。</p></div><button class="ghost" data-action="navigate" data-view="manage">教材を管理</button></div>
+    <div class="section-head"><div><h2>教材</h2><p>すぐ始めるか、一覧で内容を確認できます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="manage">管理</button></div>
     <section class="pack-grid" aria-label="Active教材一覧">
       ${packs.length ? packs.map(packCard).join("") : `<div class="empty-state"><h3>Active教材がありません</h3><p>Archiveから戻すか、教材JSONを追加してください。</p><button class="primary" data-action="navigate" data-view="manage">管理を開く</button></div>`}
     </section>
@@ -258,7 +258,7 @@ function renderLibrary(restoreSearchFocus = false) {
   const visible = filtered.slice(0, libraryState.limit);
   libraryVisibleExerciseIds = [...new Set(filtered.flatMap(entry => entry.exerciseIds))];
   const content = `<main id="main-content" class="page library-page">
-    <div class="page-head library-head"><div><p class="eyebrow">BROWSE. FIND. REVIEW.</p><h1>教材ライブラリ</h1><p>フラッシュカード、正誤問題、条文、問題文を横断して探せます。答えを確認し、表示中の項目だけで学習もできます。</p></div>
+    <div class="page-head library-head"><div><p class="eyebrow">BROWSE. FIND. REVIEW.</p><h1>教材ライブラリ</h1><p>カード・問題・条文を検索できます。重要度や学習状況で絞れます。選んだ範囲だけを学習できます。</p></div>
       <label class="pack-select"><span>教材</span><select data-library-filter="packId">${active.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === pack.id ? "selected" : ""}>${escapeHtml(item.title)}</option>`).join("")}</select></label></div>
     <div class="library-tabs" role="tablist" aria-label="一覧の種類">${sections.map(item => `<button role="tab" aria-selected="${item.id === section.id}" class="${item.id === section.id ? "active" : ""}" data-action="library-section" data-section-id="${escapeHtml(item.id)}">${escapeHtml(item.label)} <span>${formatNumber(item.entries.length)}</span></button>`).join("")}</div>
     <section class="library-toolbar" aria-label="一覧の絞り込み">
@@ -268,7 +268,7 @@ function renderLibrary(restoreSearchFocus = false) {
       <label><span>範囲</span><select data-library-filter="group">${selectOptions(groups, libraryState.group, "すべて")}</select></label>
       <button class="ghost reset-filter" data-action="reset-library">条件をリセット</button>
     </section>
-    <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>件 / ${escapeHtml(section.label)}</span></div><button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div>
+    <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>件（${escapeHtml(section.label)}）</span></div><button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div>
     <section class="library-grid" aria-label="${escapeHtml(section.label)}">${visible.length ? visible.map(entry => libraryEntryCard(entry, pack)).join("") : `<div class="empty-state"><h3>該当する項目がありません</h3><p>検索語や絞り込み条件を変えてください。</p><button class="ghost" data-action="reset-library">条件をリセット</button></div>`}</section>
     ${visible.length < filtered.length ? `<div class="load-more"><button class="ghost" data-action="library-more">さらに表示（残り${formatNumber(filtered.length - visible.length)}件）</button></div>` : ""}
   </main>`;
@@ -879,12 +879,12 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.1.0", { scope: "./" });
-    if (registration.waiting) showToast("更新準備完了。アプリを閉じて開き直すと反映されます");
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.1.4", { scope: "./" });
+    if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
       worker?.addEventListener("statechange", () => {
-        if (worker.state === "installed" && navigator.serviceWorker.controller) showToast("更新を取得しました。次回起動時に安全に反映します");
+        if (worker.state === "installed" && navigator.serviceWorker.controller) showToast("更新を取得しました。次に開くと反映されます");
       });
     });
   } catch (error) {
@@ -919,7 +919,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.1.0", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.1.4", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");

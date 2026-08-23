@@ -1,7 +1,7 @@
-import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.1.0";
+import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.1.4";
 
 export const SCHEMA_VERSION = 1;
-export const APP_VERSION = "1.1.0";
+export const APP_VERSION = "1.1.4";
 export const PACK_TYPE = "memory-pack";
 export const BACKUP_TYPE = "memory-foundry-backup";
 
@@ -28,17 +28,23 @@ export function escapeHtml(value) {
   })[character]);
 }
 
+function renderPlainText(value) {
+  return escapeHtml(value)
+    .replace(/([（(][^（）()\n<>]{1,14}[）)])/g, '<span class="no-break">$1</span>')
+    .replace(/\n/g, "<br>");
+}
+
 export function renderRichText(value) {
   const source = String(value ?? "");
   let output = "";
   let cursor = 0;
   const pattern = /\[\[chem:([\s\S]*?)\]\]/g;
   for (const match of source.matchAll(pattern)) {
-    output += escapeHtml(source.slice(cursor, match.index));
+    output += renderPlainText(source.slice(cursor, match.index));
     output += `<span class="chem">${escapeHtml(match[1])}</span>`;
     cursor = match.index + match[0].length;
   }
-  return output + escapeHtml(source.slice(cursor)).replace(/\n/g, "<br>");
+  return output + renderPlainText(source.slice(cursor));
 }
 
 export function localDateKey(timestamp = Date.now()) {
