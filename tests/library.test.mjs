@@ -33,6 +33,13 @@ test("library filters by importance, range and saved learning status", () => {
   assert.equal(entryStatus(filtered.find(entry => entry.item.id === "concept:imf"), pack.id, progress), "weak");
 });
 
+test("library can filter flashcards by saved favorites", () => {
+  const pack = byId("seikei-memorization");
+  const concepts = buildLibrarySections(pack).find(section => section.id === "concepts");
+  const favorites = filterLibraryEntries(concepts, { query: "", importance: "all", status: "all", group: "all", favorite: "favorites", favoriteIds: new Set(["concept:imf"]) }, pack.id, new Map());
+  assert.deepEqual(favorites.map(entry => entry.item.id), ["concept:imf"]);
+});
+
 test("chemistry and constitution receive useful subject-specific lists", () => {
   const chemistry = buildLibrarySections(byId("inorganic-chemistry"));
   assert.equal(chemistry.find(section => section.id === "questions").entries.length, 26);

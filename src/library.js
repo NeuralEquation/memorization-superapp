@@ -129,10 +129,12 @@ export function entryStatus(entry, packId, progressMap, now = Date.now()) {
 
 export function filterLibraryEntries(section, filters, packId, progressMap, now = Date.now()) {
   const query = normalize(filters.query);
+  const favoriteIds = filters.favoriteIds instanceof Set ? filters.favoriteIds : new Set(filters.favoriteIds || []);
   return section.entries.filter(entry => {
     if (query && !entrySearchText(entry).includes(query)) return false;
     if (filters.importance && filters.importance !== "all" && String(entry.importance) !== filters.importance) return false;
     if (filters.group && filters.group !== "all" && entry.group !== filters.group) return false;
+    if (filters.favorite === "favorites" && !favoriteIds.has(entry.item?.id || entry.id)) return false;
     if (filters.status && filters.status !== "all" && entryStatus(entry, packId, progressMap, now) !== filters.status) return false;
     return true;
   });

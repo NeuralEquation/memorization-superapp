@@ -15,16 +15,16 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.3.0";
-import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.3.0";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.3.0";
+} from "./core.js?v=1.4.0";
+import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.4.0";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.4.0";
 import {
   CONSTITUTION_MOCK_DURATION_MS,
   buildConstitutionMockModel,
   gradeConstitutionMock,
   isConstitutionMockTimedOut,
   selectConstitutionMockExercises
-} from "./constitution-mock.js?v=1.3.0";
+} from "./constitution-mock.js?v=1.4.0";
 import {
   createBackup,
   deletePackCompletely,
@@ -35,7 +35,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.3.0";
+} from "./storage.js?v=1.4.0";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -53,7 +53,8 @@ let pendingDeleteId = null;
 let pendingBackup = null;
 let toastTimer = null;
 let libraryVisibleExerciseIds = [];
-const libraryState = { packId: "", sectionId: "", query: "", importance: "all", status: "all", group: "all", limit: 60 };
+let librarySearchComposing = false;
+const libraryState = { packId: "", sectionId: "", query: "", importance: "all", status: "all", group: "all", favorite: "all", limit: 60 };
 
 function showToast(message) {
   toast.textContent = message;
@@ -81,6 +82,25 @@ function packById(packId) {
 
 function exerciseById(pack, exerciseId) {
   return pack?.exercises.find(exercise => exercise.id === exerciseId) || null;
+}
+
+function favoriteIdsFor(packId) {
+  return new Set(snapshot.meta?.favorites?.[packId] || []);
+}
+
+function isFavorite(packId, itemId) {
+  return favoriteIdsFor(packId).has(itemId);
+}
+
+async function toggleFavorite(packId, itemId) {
+  const favorites = { ...(snapshot.meta?.favorites || {}) };
+  const next = new Set(favorites[packId] || []);
+  if (next.has(itemId)) next.delete(itemId); else next.add(itemId);
+  favorites[packId] = [...next];
+  snapshot.meta = { ...snapshot.meta, favorites };
+  await putMeta(db, snapshot.meta);
+  renderLibrary();
+  showToast(next.has(itemId) ? "お気に入りに追加しました" : "お気に入りから外しました");
 }
 
 function sourceLabel(exercise, pack = null) {
@@ -230,7 +250,7 @@ function libraryEntryCard(entry, pack) {
   const item = entry.item;
   if (entry.kind === "resource" && item.kind === "concept") {
     return `<details class="library-card flash-card">
-      <summary>${entryMeta(entry, pack)}<h3>${escapeHtml(item.title)}</h3><p>${renderRichText(item.text)}</p><span class="reveal-note">開いて関連語・混同ポイントを確認</span></summary>
+      <summary>${entryMeta(entry, pack)}<button type="button" class="favorite-star ${isFavorite(pack.id, item.id) ? "is-favorite" : ""}" data-action="toggle-favorite" data-pack-id="${escapeHtml(pack.id)}" data-item-id="${escapeHtml(item.id)}" aria-pressed="${isFavorite(pack.id, item.id)}" aria-label="${isFavorite(pack.id, item.id) ? "お気に入りから外す" : "お気に入りに追加"}">${isFavorite(pack.id, item.id) ? "★" : "☆"}</button><h3>${escapeHtml(item.title)}</h3><p>${renderRichText(item.text)}</p><span class="reveal-note">開いて関連語・混同ポイントを確認</span></summary>
       <div class="library-card-body">
         ${item.pair ? `<div class="detail-line"><span>関連</span><strong>${escapeHtml(item.pair)}</strong></div>` : ""}
         ${item.trap ? `<div class="detail-line caution"><span>混同</span><strong>${escapeHtml(item.trap)}</strong></div>` : ""}
@@ -277,6 +297,7 @@ function ensureLibraryState(packId = libraryState.packId) {
     libraryState.importance = "all";
     libraryState.status = "all";
     libraryState.group = "all";
+    libraryState.favorite = "all";
     libraryState.limit = 60;
   }
   const sections = buildLibrarySections(pack);
@@ -294,7 +315,7 @@ function renderLibrary(restoreSearchFocus = false) {
   }
   const groups = sectionGroups(section);
   if (libraryState.group !== "all" && !groups.includes(libraryState.group)) libraryState.group = "all";
-  const filtered = filterLibraryEntries(section, libraryState, pack.id, progressMap);
+  const filtered = filterLibraryEntries(section, { ...libraryState, favoriteIds: favoriteIdsFor(pack.id) }, pack.id, progressMap);
   const visible = filtered.slice(0, libraryState.limit);
   libraryVisibleExerciseIds = [...new Set(filtered.flatMap(entry => entry.exerciseIds))];
   const resultDescription = section.id === "cloze" ? `文・${formatNumber(libraryVisibleExerciseIds.length)}穴` : `${section.resultUnit || "件"}（${section.label}）`;
@@ -306,7 +327,8 @@ function renderLibrary(restoreSearchFocus = false) {
       <label class="library-search"><span>検索</span><input type="search" data-library-search value="${escapeHtml(libraryState.query)}" placeholder="用語・問題文・解説を検索" autocomplete="off"></label>
       <label><span>重要度</span><select data-library-filter="importance">${selectOptions(["A", "B", "C"], libraryState.importance, "すべて")}</select></label>
       <label><span>学習状況</span><select data-library-filter="status">${selectOptions(["unseen", "wrong", "weak", "learning", "mastered"], libraryState.status, "すべて", statusLabel)}</select></label>
-      <label><span>範囲</span><select data-library-filter="group">${selectOptions(groups, libraryState.group, "すべて")}</select></label>
+      ${section.id === "concepts" ? `<label class="library-favorite-filter"><span>お気に入り</span><select data-library-filter="favorite"><option value="all" ${libraryState.favorite === "all" ? "selected" : ""}>すべて</option><option value="favorites" ${libraryState.favorite === "favorites" ? "selected" : ""}>お気に入りのみ</option></select></label>` : ""}
+      <label class="library-group-filter"><span>範囲</span><select data-library-filter="group">${selectOptions(groups, libraryState.group, "すべて")}</select></label>
       <button class="ghost reset-filter" data-action="reset-library">条件をリセット</button>
     </section>
     <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>${escapeHtml(resultDescription)}</span></div><button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div>
@@ -1035,6 +1057,7 @@ async function handleClick(event) {
     else if (action === "library-section") {
       libraryState.sectionId = button.dataset.sectionId;
       libraryState.group = "all";
+      libraryState.favorite = "all";
       libraryState.limit = 60;
       renderLibrary();
     }
@@ -1047,8 +1070,13 @@ async function handleClick(event) {
       button.setAttribute("aria-expanded", String(revealed));
       button.setAttribute("aria-label", revealed ? "答えを隠す" : "答えを表示");
     }
+    else if (action === "toggle-favorite") {
+      event.preventDefault();
+      event.stopPropagation();
+      await toggleFavorite(button.dataset.packId, button.dataset.itemId);
+    }
     else if (action === "reset-library") {
-      Object.assign(libraryState, { query: "", importance: "all", status: "all", group: "all", limit: 60 });
+      Object.assign(libraryState, { query: "", importance: "all", status: "all", favorite: "all", group: "all", limit: 60 });
       renderLibrary();
     }
     else if (action === "start-library") startLibrarySession(libraryState.packId);
@@ -1125,6 +1153,19 @@ function handleLibraryInput(event) {
   if (!event.target.matches("[data-library-search]")) return;
   libraryState.query = event.target.value;
   libraryState.limit = 60;
+  if (librarySearchComposing || event.isComposing) return;
+  renderLibrary(true);
+}
+
+function handleLibraryCompositionStart(event) {
+  if (event.target.matches("[data-library-search]")) librarySearchComposing = true;
+}
+
+function handleLibraryCompositionEnd(event) {
+  if (!event.target.matches("[data-library-search]")) return;
+  librarySearchComposing = false;
+  libraryState.query = event.target.value;
+  libraryState.limit = 60;
   renderLibrary(true);
 }
 
@@ -1144,7 +1185,7 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.3.0", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.4.0", { scope: "./" });
     if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -1184,7 +1225,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.3.0", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.4.0", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");
@@ -1218,6 +1259,8 @@ app.addEventListener("change", handleFile);
 app.addEventListener("change", handleLibraryChange);
 app.addEventListener("input", handleLibraryInput);
 app.addEventListener("input", handleMockInput);
+app.addEventListener("compositionstart", handleLibraryCompositionStart);
+app.addEventListener("compositionend", handleLibraryCompositionEnd);
 modal.addEventListener("click", handleClick);
 document.addEventListener("keydown", handleKeyboard);
 modal.addEventListener("cancel", event => { event.preventDefault(); closeModal(); });

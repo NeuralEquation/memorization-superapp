@@ -29,6 +29,9 @@ test("rating persistence has a synchronous double-submit guard", async () => {
   assert.match(app, /button\.disabled = true;/);
   assert.match(app, /start-constitution-mock/);
   assert.match(app, /sessionStorage/);
+  assert.match(app, /compositionstart/);
+  assert.match(app, /compositionend/);
+  assert.match(app, /favorite-star/);
 });
 
 test("mobile shell prevents study actions and Japanese copy from fragmenting", async () => {
