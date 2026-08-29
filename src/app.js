@@ -15,9 +15,9 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.1.4";
-import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.1.4";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.1.4";
+} from "./core.js?v=1.2.0";
+import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.2.0";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.2.0";
 import {
   createBackup,
   deletePackCompletely,
@@ -28,7 +28,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.1.4";
+} from "./storage.js?v=1.2.0";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -74,8 +74,9 @@ function exerciseById(pack, exerciseId) {
   return pack?.exercises.find(exercise => exercise.id === exerciseId) || null;
 }
 
-function sourceLabel(exercise) {
-  return exercise.metadata?.topic || exercise.payload?.heading || exercise.source?.legacyId || exercise.id;
+function sourceLabel(exercise, pack = null) {
+  const resource = pack?.resources?.find(item => item.id === exercise.resourceId);
+  return resource?.title || exercise.metadata?.topic || exercise.payload?.heading || exercise.source?.legacyId || exercise.id;
 }
 
 function descriptionFor(pack) {
@@ -193,6 +194,28 @@ function exerciseDetail(exercise) {
     ${caution ? `<p class="library-caution">注意: ${renderRichText(caution)}</p>` : ""}`;
 }
 
+function readableArticleText(value) {
+  return String(value || "").replace(/。([2-9])(?=\S)/g, "。\n$1 ");
+}
+
+function clozeRevealButton(exercise, index) {
+  const answer = exercise?.payload?.acceptedAnswers?.[0] || exercise?.payload?.answer || "答えなし";
+  const dots = "●".repeat(Math.max(2, Math.min(6, [...String(answer)].length)));
+  return `<button class="inline-cloze" type="button" data-action="reveal-library-blank" aria-expanded="false" aria-label="空欄${index + 1}の答えを表示"><span class="blank-mask">${dots}</span><span class="blank-answer">${renderRichText(answer)}</span></button>`;
+}
+
+function renderClozePassage(entry) {
+  const resource = entry.item;
+  const byLegacyId = new Map(entry.exercises.map(exercise => [exercise.source?.legacyId || exercise.id.replace(/^cloze:/, ""), exercise]));
+  let blankIndex = 0;
+  const passage = (resource.segments || []).map(segment => {
+    if (segment.type === "text") return renderRichText(readableArticleText(segment.text));
+    const exercise = byLegacyId.get(segment.blankId);
+    return clozeRevealButton(exercise, blankIndex++);
+  }).join("");
+  return `<div class="cloze-instructions">空欄をタップすると、その場で答えが開きます。</div><p class="cloze-passage-text">${passage || renderRichText(resource.text)}</p>`;
+}
+
 function libraryEntryCard(entry, pack) {
   const item = entry.item;
   if (entry.kind === "resource" && item.kind === "concept") {
@@ -209,6 +232,13 @@ function libraryEntryCard(entry, pack) {
     return `<details class="library-card article-card">
       <summary>${entryMeta(entry, pack)}<span class="article-number">${articleLabel}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(String(item.text || "").slice(0, 90))}${String(item.text || "").length > 90 ? "…" : ""}</p><span class="reveal-note">条文全文を表示</span></summary>
       <div class="library-card-body article-text">${renderRichText(item.text)}</div>
+    </details>`;
+  }
+  if (entry.kind === "cloze-group") {
+    const articleLabel = item.articleNumber ? `第${item.articleNumber}条` : "前文";
+    return `<details class="library-card cloze-article-card">
+      <summary>${entryMeta(entry, pack)}<span class="article-number">${articleLabel}</span><h3>${escapeHtml(item.title)}</h3><p>${entry.exerciseIds.length}か所を、1つの文章で確認します。</p><span class="reveal-note">文章を開く</span></summary>
+      <div class="library-card-body">${renderClozePassage(entry)}</div>
     </details>`;
   }
   if (entry.kind === "resource") {
@@ -257,10 +287,11 @@ function renderLibrary(restoreSearchFocus = false) {
   const filtered = filterLibraryEntries(section, libraryState, pack.id, progressMap);
   const visible = filtered.slice(0, libraryState.limit);
   libraryVisibleExerciseIds = [...new Set(filtered.flatMap(entry => entry.exerciseIds))];
+  const resultDescription = section.id === "cloze" ? `文・${formatNumber(libraryVisibleExerciseIds.length)}穴` : `${section.resultUnit || "件"}（${section.label}）`;
   const content = `<main id="main-content" class="page library-page">
     <div class="page-head library-head"><div><p class="eyebrow">BROWSE. FIND. REVIEW.</p><h1>教材ライブラリ</h1><p>カード・問題・条文を検索できます。重要度や学習状況で絞れます。選んだ範囲だけを学習できます。</p></div>
       <label class="pack-select"><span>教材</span><select data-library-filter="packId">${active.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === pack.id ? "selected" : ""}>${escapeHtml(item.title)}</option>`).join("")}</select></label></div>
-    <div class="library-tabs" role="tablist" aria-label="一覧の種類">${sections.map(item => `<button role="tab" aria-selected="${item.id === section.id}" class="${item.id === section.id ? "active" : ""}" data-action="library-section" data-section-id="${escapeHtml(item.id)}">${escapeHtml(item.label)} <span>${formatNumber(item.entries.length)}</span></button>`).join("")}</div>
+    <div class="library-tabs" role="tablist" aria-label="一覧の種類">${sections.map(item => `<button role="tab" aria-selected="${item.id === section.id}" class="${item.id === section.id ? "active" : ""}" data-action="library-section" data-section-id="${escapeHtml(item.id)}">${escapeHtml(item.label)} <span>${escapeHtml(item.countLabel || formatNumber(item.entries.length))}</span></button>`).join("")}</div>
     <section class="library-toolbar" aria-label="一覧の絞り込み">
       <label class="library-search"><span>検索</span><input type="search" data-library-search value="${escapeHtml(libraryState.query)}" placeholder="用語・問題文・解説を検索" autocomplete="off"></label>
       <label><span>重要度</span><select data-library-filter="importance">${selectOptions(["A", "B", "C"], libraryState.importance, "すべて")}</select></label>
@@ -268,7 +299,7 @@ function renderLibrary(restoreSearchFocus = false) {
       <label><span>範囲</span><select data-library-filter="group">${selectOptions(groups, libraryState.group, "すべて")}</select></label>
       <button class="ghost reset-filter" data-action="reset-library">条件をリセット</button>
     </section>
-    <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>件（${escapeHtml(section.label)}）</span></div><button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div>
+    <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>${escapeHtml(resultDescription)}</span></div><button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div>
     <section class="library-grid" aria-label="${escapeHtml(section.label)}">${visible.length ? visible.map(entry => libraryEntryCard(entry, pack)).join("") : `<div class="empty-state"><h3>該当する項目がありません</h3><p>検索語や絞り込み条件を変えてください。</p><button class="ghost" data-action="reset-library">条件をリセット</button></div>`}</section>
     ${visible.length < filtered.length ? `<div class="load-more"><button class="ghost" data-action="library-more">さらに表示（残り${formatNumber(filtered.length - visible.length)}件）</button></div>` : ""}
   </main>`;
@@ -449,7 +480,8 @@ function renderStudy() {
     session.index += 1; renderStudy(); return;
   }
   const progress = Math.round(session.index / session.queue.length * 100);
-  const meta = base.metadata?.unit || base.group || base.source?.sourceKind || pack.subject.name;
+  const resourceTitle = pack.resources?.find(resource => resource.id === base.resourceId)?.title;
+  const meta = resourceTitle || base.metadata?.unit || base.group || base.source?.sourceKind || pack.subject.name;
   const answerContent = session.result
     ? `${renderFeedback(presentation, session.result)}${renderRatingButtons(presentation)}`
     : `${session.hint ? `<div class="hint-box">${escapeHtml(session.hint)}</div>` : ""}${handler.renderAnswer(presentation)}`;
@@ -483,7 +515,8 @@ function renderProgress() {
     <div class="two-column"><section class="panel"><h2>教材別</h2><div class="manage-list">${packRows || "<p>教材がありません。</p>"}</div></section>
     <section class="panel"><h2>最近の回答</h2><div class="history-list">${recent.length ? recent.map(entry => {
       const pack = packById(entry.packId); const exercise = exerciseById(pack, entry.exerciseId);
-      return `<div class="history-row"><span class="history-result ${entry.correct ? "" : "bad"}">${entry.correct ? "✓" : "×"}</span><span class="history-copy"><strong>${escapeHtml(sourceLabel(exercise || { id: entry.exerciseId, payload: {} }))}</strong><small>${escapeHtml(pack?.title || entry.packId)} ・ ${escapeHtml(entry.interactionType)}</small></span><span class="history-time">${formatDate(entry.attemptedAt)}</span></div>`;
+      const typeLabel = getHandler(entry.interactionType)?.label || entry.interactionType;
+      return `<div class="history-row"><span class="history-result ${entry.correct ? "" : "bad"}">${entry.correct ? "✓" : "×"}</span><span class="history-copy"><strong>${escapeHtml(sourceLabel(exercise || { id: entry.exerciseId, payload: {} }, pack))}</strong><small>${escapeHtml(pack?.title || entry.packId)} ・ ${escapeHtml(typeLabel)}</small></span><span class="history-time">${formatDate(entry.attemptedAt)}</span></div>`;
     }).join("") : "<p>まだ回答履歴がありません。</p>"}</div></section></div>
   </main>`;
   app.innerHTML = appShell(content, "progress");
@@ -792,6 +825,11 @@ async function handleClick(event) {
       libraryState.limit += 60;
       renderLibrary();
     }
+    else if (action === "reveal-library-blank") {
+      const revealed = button.classList.toggle("revealed");
+      button.setAttribute("aria-expanded", String(revealed));
+      button.setAttribute("aria-label", revealed ? "答えを隠す" : "答えを表示");
+    }
     else if (action === "reset-library") {
       Object.assign(libraryState, { query: "", importance: "all", status: "all", group: "all", limit: 60 });
       renderLibrary();
@@ -879,7 +917,7 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.1.4", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.2.0", { scope: "./" });
     if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -919,7 +957,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.1.4", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.2.0", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");

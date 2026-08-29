@@ -21,6 +21,24 @@ function resourceEntry(resource, linkedExercises = []) {
   };
 }
 
+function strongestImportance(exercises) {
+  const rank = { A: 3, B: 2, C: 1 };
+  return exercises.reduce((best, exercise) => (rank[exercise.importance] || 0) > (rank[best] || 0) ? exercise.importance : best, "");
+}
+
+function clozeGroupEntry(resource, exercises) {
+  return {
+    id: `cloze-group:${resource.id}`,
+    kind: "cloze-group",
+    item: resource,
+    exercises,
+    searchItems: exercises,
+    exerciseIds: exercises.map(exercise => exercise.id),
+    importance: strongestImportance(exercises),
+    group: resource.chapterId || "条文"
+  };
+}
+
 function exerciseEntry(exercise) {
   return {
     id: exercise.id,
@@ -35,6 +53,10 @@ function exerciseEntry(exercise) {
 export function buildLibrarySections(pack) {
   const resources = pack.resources || [];
   const exercises = pack.exercises || [];
+  const resourceById = new Map(resources.map(resource => [resource.id, resource]));
+  const chapterNames = new Map(resources.filter(resource => resource.kind === "constitution-chapter")
+    .map(chapter => [chapter.source?.legacyId || chapter.id.replace(/^chapter:/, ""), chapter.name]));
+  const readableChapter = chapterId => chapterNames.get(chapterId) || chapterId;
   const links = new Map(resources.map(resource => [resource.id, []]));
   exercises.forEach(exercise => {
     if (exercise.resourceId && links.has(exercise.resourceId)) links.get(exercise.resourceId).push(exercise);
@@ -54,12 +76,26 @@ export function buildLibrarySections(pack) {
   if (judgements.length) sections.push({ id: "judgements", label: "正誤問題", entries: judgements.map(exerciseEntry) });
 
   if (articles.length) {
-    sections.push({ id: "articles", label: "条文一覧", entries: articles.map(resource => resourceEntry(resource, links.get(resource.id))) });
+    sections.push({ id: "articles", label: "条文一覧", entries: articles.map(resource => ({ ...resourceEntry(resource, links.get(resource.id)), group: readableChapter(resource.chapterId) })) });
   }
   const cloze = exercises.filter(exercise => exercise.type === "cloze");
-  if (cloze.length) sections.push({ id: "cloze", label: "穴埋め問題", entries: cloze.map(exerciseEntry) });
+  const articleCloze = cloze.filter(exercise => articleIds.has(exercise.resourceId));
+  const clozeByResource = new Map();
+  articleCloze.forEach(exercise => {
+    if (!clozeByResource.has(exercise.resourceId)) clozeByResource.set(exercise.resourceId, []);
+    clozeByResource.get(exercise.resourceId).push(exercise);
+  });
+  const clozeGroups = articles.filter(resource => clozeByResource.has(resource.id))
+    .map(resource => ({ ...clozeGroupEntry(resource, clozeByResource.get(resource.id)), group: readableChapter(resource.chapterId) }));
+  if (clozeGroups.length) sections.push({ id: "cloze", label: "条文穴埋め", entries: clozeGroups, countLabel: `${clozeGroups.length}文・${articleCloze.length}穴`, resultUnit: `文（全${articleCloze.length}穴）` });
+  const summaryCloze = cloze.filter(exercise => !articleIds.has(exercise.resourceId));
+  if (summaryCloze.length) sections.push({ id: "summary-cloze", label: "基礎穴埋め", entries: summaryCloze.map(exerciseEntry), countLabel: `${summaryCloze.length}問`, resultUnit: "問" });
   const recall = exercises.filter(exercise => exercise.type === "full-recall");
-  if (recall.length) sections.push({ id: "full-recall", label: "全文想起", entries: recall.map(exerciseEntry) });
+  if (recall.length) sections.push({ id: "full-recall", label: "全文想起", entries: recall.map(exercise => {
+    const entry = exerciseEntry(exercise);
+    const resource = resourceById.get(exercise.resourceId);
+    return resource?.chapterId ? { ...entry, group: readableChapter(resource.chapterId) } : entry;
+  }) });
 
   const assignedExerciseIds = new Set([
     ...judgements.map(exercise => exercise.id),
@@ -75,7 +111,7 @@ export function buildLibrarySections(pack) {
 }
 
 export function entrySearchText(entry) {
-  return normalize(searchable(entry.item).join(" "));
+  return normalize(searchable([entry.item, entry.searchItems || []]).join(" "));
 }
 
 export function entryRecords(entry, packId, progressMap) {

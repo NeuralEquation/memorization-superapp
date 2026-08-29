@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { renderRichText } from "../src/core.js";
-import { getHandler, renderFeedback } from "../src/exercise-registry.js";
+import { clozeContextParts, getHandler, renderFeedback } from "../src/exercise-registry.js";
 
 test("rich text escapes untrusted HTML while rendering chemistry markup", () => {
   const html = renderRichText('<img src=x onerror=alert(1)> [[chem:Fe^{3+}]]');
@@ -13,6 +13,14 @@ test("rich text escapes untrusted HTML while rendering chemistry markup", () => 
 test("rich text keeps short parenthetical references together", () => {
   const html = renderRichText("国民審査（第79条）を答える");
   assert.ok(html.includes('<span class="no-break">（第79条）</span>'));
+});
+
+test("cloze study prompt keeps local context instead of repeating a full article", () => {
+  const context = clozeContextParts({ before: `前の文章。${"長い文脈".repeat(30)}`, after: `${"後ろの文脈".repeat(30)}。次の文章。` });
+  assert.ok(context.before.startsWith("…"));
+  assert.ok(context.after.endsWith("…"));
+  assert.ok(context.before.length <= 73);
+  assert.ok(context.after.length <= 73);
 });
 
 test("important renderer outputs include accessible controls", () => {

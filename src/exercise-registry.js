@@ -1,4 +1,4 @@
-import { escapeHtml, gradeExercise, renderRichText } from "./core.js?v=1.1.4";
+import { escapeHtml, gradeExercise, renderRichText } from "./core.js?v=1.2.0";
 
 function explanation(payload) {
   return payload.explanation || payload.related || payload.caution || "";
@@ -20,6 +20,19 @@ function renderChoice(exercise, multiple = false) {
   return `<div class="answer-options" role="group" aria-label="選択肢">${payload.options.map((option, index) => `
     <label class="answer-option"><input type="${inputType}" name="answer" value="${escapeHtml(option.id)}"><span class="shortcut">${index + 1}</span><span>${renderRichText(option.text)}</span></label>
   `).join("")}</div>`;
+}
+
+export function clozeContextParts(payload, limit = 72) {
+  const before = String(payload?.before || "");
+  const after = String(payload?.after || "");
+  const lastStop = Math.max(before.lastIndexOf("。"), before.lastIndexOf("！"), before.lastIndexOf("？"));
+  let shortBefore = lastStop >= 0 ? before.slice(lastStop + 1) : before;
+  if (shortBefore.length > limit) shortBefore = `…${shortBefore.slice(-limit)}`;
+  const stopCandidates = [after.indexOf("。"), after.indexOf("！"), after.indexOf("？")].filter(index => index >= 0);
+  const firstStop = stopCandidates.length ? Math.min(...stopCandidates) : -1;
+  let shortAfter = firstStop >= 0 ? after.slice(0, firstStop + 1) : after;
+  if (shortAfter.length > limit) shortAfter = `${shortAfter.slice(0, limit)}…`;
+  return { before: shortBefore, after: shortAfter };
 }
 
 export const registry = Object.freeze({
@@ -53,7 +66,10 @@ export const registry = Object.freeze({
   },
   "cloze": {
     label: "穴埋め",
-    renderPrompt: exercise => `<span class="cloze-context">${renderRichText(exercise.payload.before)}</span><span class="blank-slot" aria-label="空欄">？</span><span class="cloze-context">${renderRichText(exercise.payload.after)}</span>`,
+    renderPrompt: exercise => {
+      const context = clozeContextParts(exercise.payload);
+      return `<span class="cloze-context">${renderRichText(context.before)}</span><span class="blank-slot" aria-label="空欄">？</span><span class="cloze-context">${renderRichText(context.after)}</span>`;
+    },
     renderAnswer: () => `<label class="text-answer"><span>空欄</span><input id="answer-input" name="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="空欄の語句を入力"></label>`,
     readResponse: root => root.querySelector("input[name=answer]")?.value ?? "",
     grade: gradeExercise

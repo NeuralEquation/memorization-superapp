@@ -41,6 +41,21 @@ test("chemistry and constitution receive useful subject-specific lists", () => {
 
   const constitution = buildLibrarySections(byId("constitution-quest"));
   assert.equal(constitution.find(section => section.id === "articles").entries.length, 104);
-  assert.equal(constitution.find(section => section.id === "cloze").entries.length, 288);
+  const articleCloze = constitution.find(section => section.id === "cloze");
+  assert.equal(articleCloze.entries.length, 88);
+  assert.equal(articleCloze.entries.reduce((sum, entry) => sum + entry.exerciseIds.length, 0), 280);
+  const articleBlankCount = articleCloze.entries.reduce((sum, entry) => {
+    const exerciseBlankIds = new Set(entry.exercises.map(exercise => exercise.source?.legacyId));
+    const blankSegments = entry.item.segments.filter(segment => segment.type === "blank");
+    assert.ok(blankSegments.every(segment => exerciseBlankIds.has(segment.blankId)), `${entry.item.id} has an unmapped blank`);
+    assert.equal(blankSegments.length, entry.exerciseIds.length, `${entry.item.id} blank count`);
+    return sum + blankSegments.length;
+  }, 0);
+  assert.equal(articleBlankCount, 280);
+  assert.ok(sectionGroups(articleCloze).includes("国民の権利及び義務 I"));
+  assert.ok(!sectionGroups(articleCloze).includes("rights-1"));
+  assert.equal(constitution.find(section => section.id === "summary-cloze").entries.length, 8);
   assert.equal(constitution.find(section => section.id === "full-recall").entries.length, 104);
+  const clozeSearch = filterLibraryEntries(articleCloze, { query: "選挙", importance: "all", status: "all", group: "all" }, "constitution-quest", new Map());
+  assert.ok(clozeSearch.some(entry => entry.item.id === "article:preamble"));
 });
