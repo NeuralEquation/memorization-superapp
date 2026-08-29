@@ -1,7 +1,7 @@
-import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.2.0";
+import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.3.0";
 
 export const SCHEMA_VERSION = 1;
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.3.0";
 export const PACK_TYPE = "memory-pack";
 export const BACKUP_TYPE = "memory-foundry-backup";
 
@@ -222,7 +222,8 @@ export function updateMemory(previous, event, now = Date.now()) {
   const wasWrongToday = record.lastWrongAt && localDateKey(record.lastWrongAt) === localDateKey(now);
   const previousDay = record.lastCorrectAt ? localDateKey(record.lastCorrectAt) : null;
   const crossDay = Boolean(previousDay && previousDay !== localDateKey(now));
-  const responseMs = Math.max(0, Number(event.responseMs) || 0);
+  const hasResponseMs = event.responseMs != null;
+  const responseMs = hasResponseMs ? Math.max(0, Number(event.responseMs) || 0) : 0;
   const result = event.rating || (event.correct ? "good" : "again");
   const correct = result !== "again" && event.correct !== false;
   const hesitant = result === "hard" || event.hesitant === true;
@@ -230,15 +231,17 @@ export function updateMemory(previous, event, now = Date.now()) {
   const baseWeight = getExerciseTypeDefinition(event.interactionType).recallWeight;
   const hintPenalty = event.usedHint ? 0.22 : 0;
   const cramPenalty = event.sessionMode === "cram" ? 0.45 : 0;
-  const slowPenalty = responseMs > 30_000 ? 0.08 : 0;
+  const slowPenalty = hasResponseMs && responseMs > 30_000 ? 0.08 : 0;
   const ratingWeight = easy ? 0.12 : hesitant ? -0.2 : 0;
   const quality = clamp(baseWeight - hintPenalty - cramPenalty - slowPenalty + ratingWeight, 0.1, 1);
 
   record.attempts += 1;
   record.lastAttemptAt = now;
-  record.averageResponseMs = record.attempts === 1
-    ? responseMs
-    : Math.round(((record.averageResponseMs || 0) * (record.attempts - 1) + responseMs) / record.attempts);
+  if (hasResponseMs) {
+    record.averageResponseMs = record.attempts === 1
+      ? responseMs
+      : Math.round(((record.averageResponseMs || 0) * (record.attempts - 1) + responseMs) / record.attempts);
+  }
   const previousEvidence = record.evidence?.[event.interactionType] || { attempts: 0, correct: 0, wrong: 0, hesitant: 0, lastAt: null };
   record.evidence = {
     ...(record.evidence || {}),

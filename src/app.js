@@ -15,9 +15,16 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.2.0";
-import { expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.2.0";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.2.0";
+} from "./core.js?v=1.3.0";
+import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.3.0";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.3.0";
+import {
+  CONSTITUTION_MOCK_DURATION_MS,
+  buildConstitutionMockModel,
+  gradeConstitutionMock,
+  isConstitutionMockTimedOut,
+  selectConstitutionMockExercises
+} from "./constitution-mock.js?v=1.3.0";
 import {
   createBackup,
   deletePackCompletely,
@@ -28,7 +35,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.2.0";
+} from "./storage.js?v=1.3.0";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -39,6 +46,8 @@ let snapshot = { meta: {}, packs: [], progress: [], history: [] };
 let progressMap = new Map();
 let currentView = "home";
 let session = null;
+let mockSession = null;
+let mockTimer = null;
 let pendingImport = null;
 let pendingDeleteId = null;
 let pendingBackup = null;
@@ -136,6 +145,7 @@ function packCard(pack) {
         <button class="secondary" data-action="start" data-pack-id="${escapeHtml(pack.id)}" data-mode="weak">弱点</button>
         <button class="ghost" data-action="start" data-pack-id="${escapeHtml(pack.id)}" data-mode="cram">直前</button>
         ${fullRecallCount ? `<button class="ghost" data-action="start" data-pack-id="${escapeHtml(pack.id)}" data-mode="full">全文想起</button>` : ""}
+        ${pack.id === "constitution-quest" ? `<button class="secondary" data-action="start-constitution-mock" data-pack-id="${escapeHtml(pack.id)}">15分模試</button>` : ""}
         <button class="ghost wide" data-action="open-library" data-pack-id="${escapeHtml(pack.id)}">一覧・検索</button>
       </div>
     </div>
@@ -373,6 +383,207 @@ function startLibrarySession(packId, exerciseIds = libraryVisibleExerciseIds) {
   beginSession(packId, "library", queue, pool.map(exercise => exercise.id));
 }
 
+const MOCK_STORAGE_KEY = "memory-foundry-constitution-mock";
+
+function clearMockTimer() {
+  if (mockTimer) clearInterval(mockTimer);
+  mockTimer = null;
+}
+
+function clearMockStorage() {
+  try { sessionStorage.removeItem(MOCK_STORAGE_KEY); } catch { /* private browsing can deny storage */ }
+}
+
+function persistMockSession() {
+  if (!mockSession || mockSession.completed) return;
+  try {
+    sessionStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify({
+      packId: mockSession.packId,
+      selectedExerciseIds: mockSession.selectedExerciseIds,
+      responses: mockSession.responses,
+      startedAt: mockSession.startedAt,
+      endsAt: mockSession.endsAt
+    }));
+  } catch { /* sessionStorage is an enhancement; the active page remains usable */ }
+}
+
+function restoreMockSession() {
+  try {
+    const raw = sessionStorage.getItem(MOCK_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (saved?.packId !== "constitution-quest" || !Array.isArray(saved.selectedExerciseIds) || !saved.selectedExerciseIds.length) return null;
+    if (!Number.isFinite(saved.startedAt) || !Number.isFinite(saved.endsAt)) return null;
+    return {
+      packId: saved.packId,
+      selectedExerciseIds: saved.selectedExerciseIds,
+      responses: saved.responses && typeof saved.responses === "object" ? saved.responses : {},
+      startedAt: saved.startedAt,
+      endsAt: saved.endsAt,
+      submittedAt: null,
+      completed: false,
+      timedOut: false,
+      result: null,
+      submitting: false
+    };
+  } catch {
+    clearMockStorage();
+    return null;
+  }
+}
+
+function startConstitutionMock(packId) {
+  const pack = packById(packId);
+  if (!pack || pack.id !== "constitution-quest" || pack.status !== "active") return;
+  clearMockTimer();
+  clearMockStorage();
+  const selected = selectConstitutionMockExercises(pack);
+  const startedAt = Date.now();
+  mockSession = {
+    packId,
+    selectedExerciseIds: selected.map(exercise => exercise.id),
+    responses: {},
+    startedAt,
+    endsAt: startedAt + CONSTITUTION_MOCK_DURATION_MS,
+    submittedAt: null,
+    completed: false,
+    timedOut: false,
+    result: null,
+    submitting: false
+  };
+  persistMockSession();
+  currentView = "mock";
+  render();
+  startMockTimer();
+}
+
+function formatMockTime(milliseconds) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  return `${String(Math.floor(totalSeconds / 60)).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`;
+}
+
+function mockExercise(pack, exerciseId) {
+  return exerciseById(pack, exerciseId);
+}
+
+function mockArticleSegment(segment, pack) {
+  if (segment.type === "text") return renderRichText(segment.text);
+  const current = mockSession.responses[segment.exerciseId] ?? "";
+  return `<input class="mock-blank-input" data-mock-input="${escapeHtml(segment.exerciseId)}" value="${escapeHtml(current)}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="空欄の回答">`;
+}
+
+function renderMockResult(pack) {
+  const result = mockSession.result || { correct: 0, total: mockSession.selectedExerciseIds.length, incorrect: mockSession.selectedExerciseIds.length, unanswered: 0, accuracy: 0, items: [] };
+  const elapsed = Math.max(0, (mockSession.submittedAt || Date.now()) - mockSession.startedAt);
+  const wrongItems = result.items.filter(item => !item.correct);
+  const wrongList = wrongItems.length ? `<section class="mock-wrong-list"><h2>間違えた問題</h2>${wrongItems.map(item => {
+    const exercise = mockExercise(pack, item.exerciseId);
+    const resource = pack.resources?.find(candidate => candidate.id === exercise?.resourceId);
+    const label = exercise?.id.startsWith("summary-cloze:") ? "基本事項" : resource?.articleNumber ? `第${resource.articleNumber}条` : "前文";
+    const contextParts = exercise ? clozeContextParts(exercise.payload, 90) : { before: "", after: "" };
+    const context = exercise ? `${contextParts.before}［${item.response || "未回答"}］${contextParts.after}` : "";
+    return `<article class="mock-wrong-item"><strong>${escapeHtml(label)}</strong><p>${renderRichText(context)}</p><small>正答: ${renderRichText((item.expected || []).join(" / "))}</small></article>`;
+  }).join("")}</section>` : `<p class="mock-all-correct">全問正解です。</p>`;
+  return appShell(`<main id="main-content" class="study-page"><div class="study-wrap"><section class="study-result mock-result">
+    <p class="eyebrow">15-MINUTE MOCK COMPLETE</p><h1>${result.correct} / ${result.total}</h1><p class="mock-score">${result.accuracy}%</p>
+    <div class="summary-grid"><div class="summary-card"><strong>${result.incorrect}</strong><span>不正解</span></div><div class="summary-card"><strong>${result.unanswered}</strong><span>未回答</span></div><div class="summary-card"><strong>${formatMockTime(elapsed)}</strong><span>所要時間</span></div></div>
+    ${mockSession.timedOut ? `<p class="hint-box">時間切れで自動提出しました。</p>` : ""}${wrongList}
+    <div class="button-row" style="justify-content:center"><button class="primary" data-action="restart-constitution-mock">別の30問</button>${wrongItems.length ? `<button class="secondary" data-action="mock-review-wrong">間違えた問題だけ復習</button>` : ""}<button class="ghost" data-action="quit-mock">教材一覧へ</button></div>
+  </section></div></main>`, "study");
+}
+
+function renderMock() {
+  const pack = packById(mockSession?.packId);
+  if (!pack || pack.id !== "constitution-quest" || pack.status !== "active") {
+    clearMockTimer(); clearMockStorage(); mockSession = null; currentView = "home"; renderHome(); return;
+  }
+  if (mockSession.completed) {
+    app.innerHTML = renderMockResult(pack);
+    return;
+  }
+  const selected = mockSession.selectedExerciseIds.map(id => mockExercise(pack, id)).filter(Boolean);
+  const model = buildConstitutionMockModel(pack, selected);
+  const remaining = Math.max(0, mockSession.endsAt - Date.now());
+  const groups = model.groups.map(group => {
+    if (group.kind === "summary") {
+      return `<section class="mock-section mock-summary-section"><h2>${escapeHtml(group.label)}</h2>${group.items.map(item => `<p class="mock-summary-line">${renderRichText(item.before)}${mockArticleSegment({ type: "input", exerciseId: item.exerciseId }, pack)}${renderRichText(item.after)}</p>`).join("")}</section>`;
+    }
+    return `<section class="mock-section"><h2>${escapeHtml(group.label)}</h2><p class="mock-article-text">${group.segments.map(segment => mockArticleSegment(segment, pack)).join("")}</p></section>`;
+  }).join("");
+  app.innerHTML = appShell(`<main id="main-content" class="study-page mock-page"><div class="study-wrap">
+    <div class="mock-hud"><div><p class="eyebrow">CONSTITUTION QUEST</p><strong>15分模試</strong><span>30か所・記述式</span></div><div class="mock-timer" data-mock-timer aria-live="polite">${formatMockTime(remaining)}</div></div>
+    <p class="mock-note">条文見出しは省略しています。文中の空欄だけに入力してください。</p>${groups}
+    <div class="mock-submit-row"><button class="primary" data-action="submit-constitution-mock">提出する</button><button class="ghost" data-action="quit-mock">中断</button></div>
+  </div></main>`, "study");
+}
+
+function startMockTimer() {
+  clearMockTimer();
+  if (!mockSession || mockSession.completed) return;
+  const tick = () => {
+    if (!mockSession || mockSession.completed) return clearMockTimer();
+    const remaining = Math.max(0, mockSession.endsAt - Date.now());
+    document.querySelector("[data-mock-timer]")?.replaceChildren(document.createTextNode(formatMockTime(remaining)));
+    if (isConstitutionMockTimedOut(mockSession)) submitConstitutionMock(true);
+  };
+  tick();
+  mockTimer = setInterval(tick, 1000);
+}
+
+async function submitConstitutionMock(timedOut = false) {
+  if (!mockSession || mockSession.completed || mockSession.submitting) return;
+  const activeMock = mockSession;
+  activeMock.submitting = true;
+  clearMockTimer();
+  const pack = packById(activeMock.packId);
+  const result = gradeConstitutionMock(pack, activeMock.selectedExerciseIds, activeMock.responses);
+  const now = Date.now();
+  try {
+    for (const item of result.items) {
+      const previous = progressMap.get(progressKey(pack.id, item.exerciseId));
+      const progress = updateMemory(previous, {
+        packId: pack.id,
+        exerciseId: item.exerciseId,
+        interactionType: "cloze",
+        correct: item.correct,
+        rating: item.correct ? "good" : "again",
+        usedHint: false,
+        sessionMode: "mock"
+      }, now);
+      const history = {
+        id: randomId("attempt"), packId: pack.id, exerciseId: item.exerciseId,
+        interactionType: "cloze", originalType: "cloze", correct: item.correct,
+        rating: item.correct ? "good" : "again", usedHint: false, sessionMode: "mock", attemptedAt: now
+      };
+      await recordAttempt(db, progress, history);
+      const existingIndex = snapshot.progress.findIndex(record => record.key === progress.key);
+      if (existingIndex >= 0) snapshot.progress[existingIndex] = progress; else snapshot.progress.push(progress);
+      snapshot.history.unshift(history);
+      progressMap.set(progress.key, progress);
+    }
+  } catch (error) {
+    activeMock.submitting = false;
+    showToast(`模試結果を保存できませんでした: ${error.message}`);
+    startMockTimer();
+    return;
+  }
+  activeMock.submitting = false;
+  activeMock.completed = true;
+  activeMock.timedOut = timedOut;
+  activeMock.submittedAt = now;
+  activeMock.result = result;
+  clearMockStorage();
+  mockSession = activeMock;
+  renderMock();
+}
+
+function handleMockInput(event) {
+  const input = event.target.closest("[data-mock-input]");
+  if (!input || !mockSession || mockSession.completed) return;
+  mockSession.responses[input.dataset.mockInput] = input.value;
+  persistMockSession();
+}
+
 function firstAcceptedAnswer(exercise) {
   const payload = exercise.payload || {};
   if (exercise.type === "cloze") return payload.acceptedAnswers?.[0] || payload.answer;
@@ -549,6 +760,7 @@ function renderManage() {
 
 function render() {
   if (currentView === "study" && session) renderStudy();
+  else if (currentView === "mock" && mockSession) renderMock();
   else if (currentView === "library") renderLibrary();
   else if (currentView === "progress") renderProgress();
   else if (currentView === "manage") renderManage();
@@ -557,6 +769,11 @@ function render() {
 
 function navigate(view) {
   if (view !== "study") session = null;
+  if (view !== "mock") {
+    clearMockTimer();
+    if (currentView === "mock") clearMockStorage();
+    mockSession = null;
+  }
   currentView = view;
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -836,7 +1053,17 @@ async function handleClick(event) {
     }
     else if (action === "start-library") startLibrarySession(libraryState.packId);
     else if (action === "start") startSession(button.dataset.packId, button.dataset.mode);
+    else if (action === "start-constitution-mock") startConstitutionMock(button.dataset.packId);
     else if (action === "quit-study") navigate("home");
+    else if (action === "quit-mock") navigate("home");
+    else if (action === "submit-constitution-mock") await submitConstitutionMock(false);
+    else if (action === "restart-constitution-mock") startConstitutionMock("constitution-quest");
+    else if (action === "mock-review-wrong") {
+      const wrongIds = mockSession?.result?.items.filter(item => !item.correct).map(item => item.exerciseId) || [];
+      const packId = mockSession?.packId;
+      navigate("home");
+      if (wrongIds.length) startLibrarySession(packId, wrongIds);
+    }
     else if (action === "restart-session") session.mode === "library" ? startLibrarySession(session.packId, session.sourceExerciseIds) : startSession(session.packId, session.mode);
     else if (action === "submit-answer") submitAnswer();
     else if (action === "reveal") revealAnswer();
@@ -917,7 +1144,7 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.2.0", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.3.0", { scope: "./" });
     if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -957,7 +1184,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.2.0", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.3.0", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");
@@ -971,7 +1198,14 @@ async function init() {
       snapshot.meta = synced.meta;
     }
     refreshMaps();
+    const restoredMock = restoreMockSession();
+    const restoredPack = restoredMock ? packById(restoredMock.packId) : null;
+    if (restoredMock && restoredPack?.status === "active") {
+      mockSession = restoredMock;
+      currentView = "mock";
+    }
     render();
+    if (mockSession) startMockTimer();
     registerServiceWorker();
   } catch (error) {
     console.error(error);
@@ -983,6 +1217,7 @@ app.addEventListener("click", handleClick);
 app.addEventListener("change", handleFile);
 app.addEventListener("change", handleLibraryChange);
 app.addEventListener("input", handleLibraryInput);
+app.addEventListener("input", handleMockInput);
 modal.addEventListener("click", handleClick);
 document.addEventListener("keydown", handleKeyboard);
 modal.addEventListener("cancel", event => { event.preventDefault(); closeModal(); });

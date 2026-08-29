@@ -115,6 +115,13 @@ test("cross-day recall grows stability and clears recent mistakes faster", () =>
   assert.equal(nextDay.lastCrossDaySuccessAt, at + 2 * 86_400_000);
 });
 
+test("missing response time preserves prior response-speed evidence", () => {
+  const at = new Date("2026-08-20T03:00:00Z").getTime();
+  const first = updateMemory(null, { packId: "p", exerciseId: "q", interactionType: "cloze", correct: true, rating: "good", responseMs: 1800 }, at);
+  const mock = updateMemory(first, { packId: "p", exerciseId: "q", interactionType: "cloze", correct: true, rating: "good", sessionMode: "mock" }, at + 60_000);
+  assert.equal(mock.averageResponseMs, 1800);
+});
+
 test("memory engine rejects invalid ratings and cross-item identity pollution", () => {
   assert.throws(() => updateMemory(null, { packId: "p", exerciseId: "q", interactionType: "text-input", correct: true, rating: "magic" }), /rating/);
   const previous = updateMemory(null, { packId: "p", exerciseId: "q1", interactionType: "text-input", correct: true, rating: "good" }, 1000);
@@ -161,4 +168,3 @@ test("memory flags expose unseen, wrong, weak, hesitant and due states", () => {
   assert.equal(flags.hesitant, true);
   assert.equal(flags.due, true);
 });
-
