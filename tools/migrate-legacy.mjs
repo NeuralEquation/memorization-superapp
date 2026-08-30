@@ -12,6 +12,13 @@ const sourcePaths = {
   constitution: resolve(legacyRoot, "政経", "constitution-quest", "data")
 };
 const outputPath = resolve(root, "data", "builtin-packs.json");
+// 学校配布プリントとの照合で確定した、概要summary 3件だけの補正。
+// 原本は sibling directory にあり、このリポジトリには含まれないため、再移行時の先祖返りを防ぐ。
+const constitutionSummaryCorrections = new Map([
+  ["summary-b5", { answer: "恒久平和主義", acceptedAnswers: ["恒久平和主義"] }],
+  ["summary-b6", { answer: "地方自治", acceptedAnswers: ["地方自治"], replaceTag: ["基本的人権", "地方自治"] }],
+  ["summary-b7", { answer: "民主主義", acceptedAnswers: ["民主主義"], replaceTag: ["国民主権", "民主主義"] }]
+]);
 
 const readJson = async path => JSON.parse(await readFile(path, "utf8"));
 const source = (path, extra = {}) => ({ sourcePath: path.replaceAll("\\", "/"), ...extra });
@@ -111,6 +118,14 @@ async function migrateConstitution() {
     readJson(resolve(base, "articles.json")), readJson(resolve(base, "blanks.json")), readJson(resolve(base, "chapters.json")),
     readJson(resolve(base, "stages.json")), readJson(resolve(base, "summary_questions.json"))
   ]);
+  const correctedSummaries = summaries.map(item => {
+    const correction = constitutionSummaryCorrections.get(item.id);
+    if (!correction) return item;
+    const tags = correction.replaceTag
+      ? (item.tags || []).map(tag => tag === correction.replaceTag[0] ? correction.replaceTag[1] : tag)
+      : item.tags;
+    return { ...item, answer: correction.answer, acceptedAnswers: correction.acceptedAnswers, tags };
+  });
   const articleResources = articles.map(article => ({
     id: `article:${article.id}`, kind: "constitution-article", title: article.heading, text: article.text, normalizedText: article.normalizedText,
     segments: article.segments, chapterId: article.chapterId, articleNumber: article.articleNumber,
@@ -135,9 +150,9 @@ async function migrateConstitution() {
     source: source("政経/constitution-quest/data/articles.json", { legacyId: article.id, derived: true, officialSource: article.source, sourcePages: article.sourcePages })
   });
   return { pack: makePack({
-    id: "constitution-quest", title: "日本国憲法クエスト", subject: { id: "politics", name: "政治" }, resources: [...articleResources, ...chapterResources, ...stageResources], exercises: [...blanks.map(cloze), ...summaries.map(summary), ...articles.map(recall)],
-    metadata: { contentVersion: "2", legacyCounts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: summaries.length, derivedFullRecall: articles.length }, sourceFiles: ["政経/constitution-quest/data/articles.json", "政経/constitution-quest/data/blanks.json", "政経/constitution-quest/data/chapters.json", "政経/constitution-quest/data/stages.json", "政経/constitution-quest/data/summary_questions.json"] }
-  }), counts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: summaries.length, fullRecall: articles.length }, raw: { articles, blanks, chapters, stages, summaries } };
+    id: "constitution-quest", title: "日本国憲法クエスト", subject: { id: "politics", name: "政治" }, resources: [...articleResources, ...chapterResources, ...stageResources], exercises: [...blanks.map(cloze), ...correctedSummaries.map(summary), ...articles.map(recall)],
+    metadata: { contentVersion: "2", legacyCounts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: correctedSummaries.length, derivedFullRecall: articles.length }, sourceFiles: ["政経/constitution-quest/data/articles.json", "政経/constitution-quest/data/blanks.json", "政経/constitution-quest/data/chapters.json", "政経/constitution-quest/data/stages.json", "政経/constitution-quest/data/summary_questions.json"] }
+  }), counts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: correctedSummaries.length, fullRecall: articles.length }, raw: { articles, blanks, chapters, stages, summaries: correctedSummaries } };
 }
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
