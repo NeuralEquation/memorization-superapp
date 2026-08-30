@@ -1,4 +1,4 @@
-import { APP_VERSION, BACKUP_TYPE, SCHEMA_VERSION, progressKey, validateBackup, validatePack } from "./core.js?v=1.5.0";
+import { APP_VERSION, BACKUP_TYPE, SCHEMA_VERSION, progressKey, validateBackup, validatePack } from "./core.js?v=1.6.1";
 
 const DB_NAME = "memory-foundry";
 const DB_VERSION = 1;
@@ -85,15 +85,17 @@ export async function addHistory(db, entry) {
   await transactionDone(transaction);
 }
 
-export async function recordAttempt(db, progressRecord, historyEntry) {
+export async function recordAttempt(db, progressRecord, historyEntry, meta = null) {
   const expectedKey = progressKey(progressRecord.packId, progressRecord.exerciseId);
   if (progressRecord.key !== expectedKey) throw new Error("progress identityが一致しません");
   if (historyEntry.packId !== progressRecord.packId || historyEntry.exerciseId !== progressRecord.exerciseId) {
     throw new Error("history identityがprogressと一致しません");
   }
-  const transaction = db.transaction([PROGRESS, HISTORY], "readwrite");
+  const stores = meta ? [META, PROGRESS, HISTORY] : [PROGRESS, HISTORY];
+  const transaction = db.transaction(stores, "readwrite");
   transaction.objectStore(PROGRESS).put(progressRecord);
   transaction.objectStore(HISTORY).put(historyEntry);
+  if (meta) transaction.objectStore(META).put(meta, "app");
   await transactionDone(transaction);
 }
 

@@ -28,6 +28,7 @@ test("politics and economics migration preserves 196 concepts and 232 authored j
   assert.equal(pack.resources.filter(resource => typeof resource.trap === "string" && resource.trap.length).length, 196);
   assert.equal(new Set(pack.resources.map(resource => resource.id)).size, 196);
   assert.equal(new Set(pack.exercises.map(exercise => exercise.id)).size, 428);
+  assert.ok(pack.exercises.filter(exercise => exercise.type === "true-false").every(exercise => typeof exercise.metadata?.stage === "string"));
   const imf = pack.resources.find(resource => resource.id === "concept:imf");
   assert.deepEqual({ term: imf.title, clue: imf.text, pair: imf.pair }, { term: "IMF", clue: "通貨・為替安定、短期融資", pair: "ブレトンウッズ体制" });
 });

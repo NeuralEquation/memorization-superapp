@@ -6495,6 +6495,9 @@
             "answer": true,
             "explanation": "IMF=通貨・為替、IBRD=復興開発。役割逆転が定番。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-imf-ibrd-1",
@@ -6509,6 +6512,9 @@
             "statement": "IBRDは為替相場の安定を目的とする短期融資機関であり、IMFは戦後復興の長期融資を担当した。",
             "answer": false,
             "explanation": "逆。IMFが通貨・為替、IBRDが復興・開発。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6525,6 +6531,9 @@
             "answer": true,
             "explanation": "GATT→WTOの流れ。WTOは紛争処理も狙われる。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-gatt-wto-1",
@@ -6539,6 +6548,9 @@
             "statement": "WTOは1947年に設立された協定で、GATTはその後に発足した国際機関である。",
             "answer": false,
             "explanation": "1947年はGATT。WTOはGATTを発展させた機関。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6555,6 +6567,9 @@
             "answer": true,
             "explanation": "金・ドル交換停止が核。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-nixon-1",
@@ -6569,6 +6584,9 @@
             "statement": "スミソニアン協定は固定相場制を維持しようとした試みで、キングストン合意は変動相場制を追認した。",
             "answer": true,
             "explanation": "スミソニアン=固定維持の試み、キングストン=変動追認。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6585,6 +6603,9 @@
             "answer": true,
             "explanation": "ドル高是正→円高→輸出産業に打撃。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-plaza-1",
@@ -6599,6 +6620,9 @@
             "statement": "プラザ合意は円安を進めるための合意で、日本の輸出産業を一貫して有利にした。",
             "answer": false,
             "explanation": "円安ではなく円高。円高不況が狙い。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6615,6 +6639,9 @@
             "answer": true,
             "explanation": "FTAよりEPAの方が広い。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-fta-epa-1",
@@ -6629,6 +6656,9 @@
             "statement": "EPAは関税撤廃のみを目的とし、投資や人の移動は対象にしない。",
             "answer": false,
             "explanation": "これはFTA寄り。EPAはより広い経済連携。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6645,6 +6675,9 @@
             "answer": true,
             "explanation": "RCEPの参加枠組み。インド参加扱いに注意。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-rcep-1",
@@ -6659,6 +6692,9 @@
             "statement": "RCEPにはインドが参加して発効し、アメリカも主要参加国である。",
             "answer": false,
             "explanation": "インドとアメリカを混ぜる誤文に注意。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6675,6 +6711,9 @@
             "answer": true,
             "explanation": "順番問題。ECSC→EEC/EURATOM→EC→EU。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-eu-flow-1",
@@ -6689,6 +6728,9 @@
             "statement": "EU加盟国はすべて共通通貨ユーロを導入している。",
             "answer": false,
             "explanation": "EU加盟国すべてではない。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6705,6 +6747,9 @@
             "answer": true,
             "explanation": "APECはゆるやかな協力。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-apec-1",
@@ -6719,6 +6764,9 @@
             "statement": "アジア通貨危機では、タイのバーツ下落や投機資金の動きが重要な論点となる。",
             "answer": true,
             "explanation": "ヘッジファンド・バーツを手がかりにする。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6735,6 +6783,9 @@
             "answer": true,
             "explanation": "サブプライム→リーマン・ショック。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-subprime-1",
@@ -6749,6 +6800,9 @@
             "statement": "トービン税は国際資本取引への課税構想で、投機的資金移動の抑制と関係する。",
             "answer": true,
             "explanation": "細かめだが選択肢消去に使える。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6765,6 +6819,9 @@
             "answer": true,
             "explanation": "企業数約99%、従業員約70%が目安。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-sme-1",
@@ -6779,6 +6836,9 @@
             "statement": "二重構造とは、大企業と中小企業の間に賃金・生産性・労働条件などの格差があることをいう。",
             "answer": true,
             "explanation": "中小企業範囲の基本。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6795,6 +6855,9 @@
             "answer": false,
             "explanation": "逆。中小企業が不利な面を問う。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-dual-2",
@@ -6809,6 +6872,9 @@
             "statement": "農地改革は寄生地主制を解体し、自作農を増やした。",
             "answer": true,
             "explanation": "大規模化ではなく自作農創出。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6825,6 +6891,9 @@
             "answer": false,
             "explanation": "寄生地主制を解体。大規模化ではない。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-farm-2",
@@ -6839,6 +6908,9 @@
             "statement": "農業基本法は農家所得の向上や選択的拡大と関係する。",
             "answer": true,
             "explanation": "選択的拡大が手がかり。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6855,6 +6927,9 @@
             "answer": true,
             "explanation": "米管理強化ではなく自由化。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-new-food-1",
@@ -6869,6 +6944,9 @@
             "statement": "ミニマム・アクセスはWTO農業協定と関係し、最低限の輸入機会を設ける考え方である。",
             "answer": true,
             "explanation": "輸入完全禁止ではない。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6885,6 +6963,9 @@
             "answer": true,
             "explanation": "PL法=製造物責任。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-pl-law-1",
@@ -6899,6 +6980,9 @@
             "statement": "PL法は訪問販売の契約を一定期間内に解除するための制度である。",
             "answer": false,
             "explanation": "それはクーリング・オフ。PL法は欠陥製品。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6915,6 +6999,9 @@
             "answer": true,
             "explanation": "PL法とクーリング・オフを分ける。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-cooling-1",
@@ -6929,6 +7016,9 @@
             "statement": "消費者契約法は不実告知などによる契約の取消しと関係する。",
             "answer": true,
             "explanation": "製品欠陥責任ではなく契約取消。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6945,6 +7035,9 @@
             "answer": true,
             "explanation": "キャッチセールスとの混同注意。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-negative-1",
@@ -6959,6 +7052,9 @@
             "statement": "キャッチセールスは、注文していない商品を送りつける商法である。",
             "answer": false,
             "explanation": "送りつけはネガティブ・オプション。キャッチセールスは街頭で声かけ。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -6975,6 +7071,9 @@
             "answer": true,
             "explanation": "連鎖販売取引。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-multi-1",
@@ -6989,6 +7088,9 @@
             "statement": "PPPは汚染者負担の原則であり、公害対策費用を汚染者に負担させる考え方である。",
             "answer": true,
             "explanation": "Polluter Pays Principle。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7005,6 +7107,9 @@
             "answer": false,
             "explanation": "汚染者負担。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-ppp-2",
@@ -7019,6 +7124,9 @@
             "statement": "環境アセスメントは開発前に環境への影響を評価する仕組みである。",
             "answer": true,
             "explanation": "事後規制ではなく事前評価。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7035,6 +7143,9 @@
             "answer": false,
             "explanation": "事前の環境影響評価。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-assessment-2",
@@ -7049,6 +7160,9 @@
             "statement": "3Rではリデュース、リユース、リサイクルが重視され、リデュースが最優先とされる。",
             "answer": true,
             "explanation": "リサイクル最優先とする誤文に注意。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7065,6 +7179,9 @@
             "answer": false,
             "explanation": "最優先はリデュース。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-3r-2",
@@ -7079,6 +7196,9 @@
             "statement": "ラムサール条約は湿地の保全に関係する。",
             "answer": true,
             "explanation": "湿地=ラムサール。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7095,6 +7215,9 @@
             "answer": true,
             "explanation": "野生生物取引=ワシントン。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-washington-1",
@@ -7109,6 +7232,9 @@
             "statement": "モントリオール議定書はオゾン層破壊物質の規制に関係する。",
             "answer": true,
             "explanation": "フロン・オゾン層。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7125,6 +7251,9 @@
             "answer": true,
             "explanation": "有害廃棄物=バーゼル。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-basel-1",
@@ -7139,6 +7268,9 @@
             "statement": "京都議定書やパリ協定は、地球温暖化対策と関係する国際的枠組みである。",
             "answer": true,
             "explanation": "温暖化=京都・パリ。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7155,6 +7287,9 @@
             "answer": false,
             "explanation": "湿地はラムサール。モントリオールはオゾン層。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-montreal-wrong-1",
@@ -7169,6 +7304,9 @@
             "statement": "財閥解体は持株会社の解体や独占禁止法と関係し、経済民主化政策の一つである。",
             "answer": true,
             "explanation": "持株会社・独占禁止法が手がかり。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7185,6 +7323,9 @@
             "answer": false,
             "explanation": "強化ではなく解体。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-zaibatsu-2",
@@ -7199,6 +7340,9 @@
             "statement": "傾斜生産方式は石炭・鉄鋼など基幹産業へ重点的に資源を投入する政策である。",
             "answer": true,
             "explanation": "石炭・鉄鋼が手がかり。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7215,6 +7359,9 @@
             "answer": false,
             "explanation": "問題集では傾斜生産方式として区別。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-keisha-2",
@@ -7229,6 +7376,9 @@
             "statement": "ドッジ・ラインは超均衡予算や1ドル=360円と関係し、デフレ不況を招いた。",
             "answer": true,
             "explanation": "超均衡予算、360円、デフレ不況。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7245,6 +7395,9 @@
             "answer": false,
             "explanation": "超均衡予算でインフレ収束。固定相場1ドル=360円。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-dodge-2",
@@ -7259,6 +7412,9 @@
             "statement": "シャウプ勧告は直接税中心の税制改革と関係する。",
             "answer": true,
             "explanation": "直接税中心。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7275,6 +7431,9 @@
             "answer": true,
             "explanation": "朝鮮戦争=特需景気。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-korean-1",
@@ -7289,6 +7448,9 @@
             "statement": "国民所得倍増計画は池田内閣による高度成長期の政策である。",
             "answer": true,
             "explanation": "池田内閣・1960年。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7305,6 +7467,9 @@
             "answer": true,
             "explanation": "GATT=輸入制限不可、IMF=為替管理不可。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-gatt11-imf8-1",
@@ -7319,6 +7484,9 @@
             "statement": "GATT11条国は為替管理の自由化、IMF8条国は輸入制限の禁止を意味する。",
             "answer": false,
             "explanation": "逆。GATT=貿易、IMF=為替。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7335,6 +7503,9 @@
             "answer": true,
             "explanation": "外貨不足がポイント。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-ceiling-1",
@@ -7349,6 +7520,9 @@
             "statement": "スタグフレーションは不況とインフレが同時に起こる状態で、石油危機と関係する。",
             "answer": true,
             "explanation": "不況+インフレ。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7365,6 +7539,9 @@
             "answer": true,
             "explanation": "減量経営=人員整理・自動化。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-genryo-1",
@@ -7379,6 +7556,9 @@
             "statement": "産業の空洞化は海外生産の拡大により国内雇用が減る問題と関係する。",
             "answer": true,
             "explanation": "海外生産→国内雇用低下。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7395,6 +7575,9 @@
             "answer": true,
             "explanation": "財テク・投機・低金利。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-bubble-1",
@@ -7409,6 +7592,9 @@
             "statement": "不良債権は回収不能な貸出であり、バブル崩壊後の金融機関悪化と関係する。",
             "answer": true,
             "explanation": "不良債権=回収不能。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7425,6 +7611,9 @@
             "answer": true,
             "explanation": "物価下落+不況。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-deflation-1",
@@ -7439,6 +7628,9 @@
             "statement": "3Cは冷蔵庫・洗濯機・白黒テレビを指す。",
             "answer": false,
             "explanation": "それは三種の神器。3Cは自動車・クーラー・カラーテレビ。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7455,6 +7647,9 @@
             "answer": true,
             "explanation": "ガリオア=生活、エロア=原料。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-garioa-1",
@@ -7469,6 +7664,9 @@
             "statement": "南北問題は先進国と発展途上国の経済格差を指し、南南問題は発展途上国間の格差を指す。",
             "answer": true,
             "explanation": "南北=先進国と途上国、南南=途上国内格差。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7485,6 +7683,9 @@
             "answer": false,
             "explanation": "それは南北問題。南南問題は途上国間格差。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-northsouth-2",
@@ -7499,6 +7700,9 @@
             "statement": "モノカルチャー経済は少数の一次産品に依存し、国際価格の変動に弱い。",
             "answer": true,
             "explanation": "一次産品依存が核。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7515,6 +7719,9 @@
             "answer": false,
             "explanation": "少数の一次産品依存で価格変動に弱い。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-mono-2",
@@ -7529,6 +7736,9 @@
             "statement": "UNCTADは貿易と開発に関係し、一般特恵関税や一次産品問題と結びつく。",
             "answer": true,
             "explanation": "UNCTAD=貿易と開発。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7545,6 +7755,9 @@
             "answer": false,
             "explanation": "HDIはUNDP。UNCTADは貿易と開発。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-unctad-2",
@@ -7559,6 +7772,9 @@
             "statement": "UNDPは開発援助や人間開発指数HDIと関係する。",
             "answer": true,
             "explanation": "UNDP=HDI。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7575,6 +7791,9 @@
             "answer": true,
             "explanation": "HDIの構成。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-hdi-1",
@@ -7589,6 +7808,9 @@
             "statement": "HDIはMDGsの8目標の一つとして定められた目標名である。",
             "answer": false,
             "explanation": "HDIは指数。UNDPが発表。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7605,6 +7827,9 @@
             "answer": true,
             "explanation": "資金だけではない。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-oda-1",
@@ -7619,6 +7844,9 @@
             "statement": "ODAは民間の非政府組織による援助だけを指し、政府資金は含まれない。",
             "answer": false,
             "explanation": "ODAは政府開発援助。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7635,6 +7863,9 @@
             "answer": true,
             "explanation": "年と目標数が定番。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-mdgs-sdgs-1",
@@ -7649,6 +7880,9 @@
             "statement": "SDGsは2015年までの8目標で、MDGsは2030年までの17目標である。",
             "answer": false,
             "explanation": "逆。MDGs=2015・8、SDGs=2030・17。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7665,6 +7899,9 @@
             "answer": true,
             "explanation": "NGO=非政府。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-ngo-1",
@@ -7679,6 +7916,9 @@
             "statement": "フェアトレードは発展途上国の生産者から安く買いたたく自由貿易を意味する。",
             "answer": false,
             "explanation": "公正価格で継続取引。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7695,6 +7935,9 @@
             "answer": true,
             "explanation": "自由貿易一般ではない。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-fair-2",
@@ -7709,6 +7952,9 @@
             "statement": "JICAは日本の国際協力機構であり、JOCVは青年海外協力隊である。",
             "answer": true,
             "explanation": "JICAとJOCVの区別。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7725,6 +7971,9 @@
             "answer": false,
             "explanation": "JICAは日本の機構、JOCVは青年海外協力隊。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-jica-2",
@@ -7739,6 +7988,9 @@
             "statement": "マイクロクレジットは低所得者への少額融資と関係する。",
             "answer": true,
             "explanation": "ODAそのものではない。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7755,6 +8007,9 @@
             "answer": true,
             "explanation": "OECDと混同注意。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "j-nieo-1",
@@ -7769,6 +8024,9 @@
             "statement": "ガリオア資金は食料・医薬品など生活必需品、エロア資金は綿花・羊毛など工業原料の輸入代金に関係する。",
             "answer": true,
             "explanation": "p.108-109。ガリオア=生活必需品、エロア=工業原料。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7785,6 +8043,9 @@
             "answer": false,
             "explanation": "p.108-109。対象が逆。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-garioa-2",
@@ -7799,6 +8060,9 @@
             "statement": "経済安定9原則はインフレ収束や予算均衡などと関係し、ドッジ・ラインへつながる流れで押さえる。",
             "answer": true,
             "explanation": "p.108-109。復金インフレ→安定9原則→ドッジ・ライン。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7815,6 +8079,9 @@
             "answer": false,
             "explanation": "p.108-109。占領期のインフレ収束策。所得倍増計画とは別。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-stable9-2",
@@ -7829,6 +8096,9 @@
             "statement": "ドッジ・ラインでは補給金削減や復興金融債発行中止などでインフレ抑制が図られた。",
             "answer": true,
             "explanation": "p.108-109。超均衡予算だけでなく補給金削減も狙われる。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7845,6 +8115,9 @@
             "answer": false,
             "explanation": "p.108-109。復金インフレを抑える側。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-dodge-detail-2",
@@ -7859,6 +8132,9 @@
             "statement": "日本の開放経済体制はGATT11条国、IMF8条国、OECD加盟などと結びつける。",
             "answer": true,
             "explanation": "p.108-109。GATT・IMF・OECDをセットで見る。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7875,6 +8151,9 @@
             "answer": false,
             "explanation": "p.108-109。OECDは先進国中心の経済協力機構。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-oecd-2",
@@ -7889,6 +8168,9 @@
             "statement": "国際収支の天井は、資源輸入増大で外貨不足になり、輸入制限などで成長が制約されることと関係する。",
             "answer": true,
             "explanation": "p.108-109。外貨不足・輸入制限・成長制約。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7905,6 +8187,9 @@
             "answer": false,
             "explanation": "p.108-109。外貨不足が原因。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-ceiling-3",
@@ -7919,6 +8204,9 @@
             "statement": "いざなぎ景気の時期、日本のGNPは資本主義世界で第2位になった。",
             "answer": true,
             "explanation": "p.108-109。高度成長後期の手がかり。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7935,6 +8223,9 @@
             "answer": false,
             "explanation": "p.108-109。特需景気とは別。いざなぎは高度成長後期。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-izanagi-2",
@@ -7949,6 +8240,9 @@
             "statement": "高度成長後期には公共投資と輸出が成長を主導したと整理できる。",
             "answer": true,
             "explanation": "p.108-109。前期・後期の流れで問われる。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7965,6 +8259,9 @@
             "answer": true,
             "explanation": "p.108-109。成長の光と影。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-pollution-1",
@@ -7979,6 +8276,9 @@
             "statement": "高度経済成長期には都市過密や農村過疎は解消され、生活基盤整備も十分に進んだ。",
             "answer": false,
             "explanation": "p.108-109。むしろ問題点として出る。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -7995,6 +8295,9 @@
             "answer": true,
             "explanation": "p.108-109。貿易摩擦から産業構造変化へ。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-trade-friction-1",
@@ -8009,6 +8312,9 @@
             "statement": "前川レポートは内需拡大や経済構造調整と関係する。",
             "answer": true,
             "explanation": "p.108-109。円高不況後の対応で狙われる。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8025,6 +8331,9 @@
             "answer": false,
             "explanation": "p.108-109。前川レポートは内需拡大・構造調整。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-maekawa-2",
@@ -8039,6 +8348,9 @@
             "statement": "バブル崩壊には公定歩合引き上げ、地価税、不良債権などが関係する。",
             "answer": true,
             "explanation": "p.108-109。低金利でバブル、引締めで崩壊。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8055,6 +8367,9 @@
             "answer": false,
             "explanation": "p.108-109。不良債権・公的資金投入が重要。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-bubble-collapse-2",
@@ -8069,6 +8384,9 @@
             "statement": "小泉構造改革は郵政民営化、財政投融資改革、特殊法人改革などと関係する。",
             "answer": true,
             "explanation": "p.108-109。構造改革の具体例。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8085,6 +8403,9 @@
             "answer": false,
             "explanation": "p.108-109。池田内閣と小泉内閣を混同しない。"
           },
+          "metadata": {
+            "stage": "3-3-1"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-108-koizumi-2",
@@ -8099,6 +8420,9 @@
             "statement": "アベノミクスは大胆な金融緩和、機動的な財政政策、成長戦略の三本の矢とされる。",
             "answer": true,
             "explanation": "p.108-109。三本の矢。"
+          },
+          "metadata": {
+            "stage": "3-3-1"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8115,6 +8439,9 @@
             "answer": true,
             "explanation": "p.110。中小企業基本法の定義。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-sme-definition-1",
@@ -8129,6 +8456,9 @@
             "statement": "中小企業は売上高が大企業を上回る企業だけを指し、資本金や従業員数は基準にならない。",
             "answer": false,
             "explanation": "p.110。資本金・従業員数が基準。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8145,6 +8475,9 @@
             "answer": true,
             "explanation": "p.110・p.119。問題演習で狙われる表現。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-regulator-1",
@@ -8159,6 +8492,9 @@
             "statement": "景気の調節弁とは、不況時に大企業が中小企業を優先的に保護する仕組みをいう。",
             "answer": false,
             "explanation": "p.110・p.119。中小企業にしわ寄せが行きやすいという文脈。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8175,6 +8511,9 @@
             "answer": true,
             "explanation": "p.110。中小企業の新しい役割。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-niche-venture-1",
@@ -8189,6 +8528,9 @@
             "statement": "大規模小売店舗立地法は大規模店の立地を調整する法律で、旧大店法のような中小小売店保護とは性格が異なる。",
             "answer": true,
             "explanation": "p.110周辺。保護から規制緩和への流れ。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8205,6 +8547,9 @@
             "answer": true,
             "explanation": "p.110・p.120。食糧管理制度→新食糧法。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-food-control-1",
@@ -8219,6 +8564,9 @@
             "statement": "新食糧法は食糧管理制度を強化し、米の流通自由化を禁止した。",
             "answer": false,
             "explanation": "p.110・p.120。新食糧法は自由化の方向。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8235,6 +8583,9 @@
             "answer": true,
             "explanation": "p.110周辺。米余りへの対応。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-reduction-1",
@@ -8249,6 +8600,9 @@
             "statement": "減反政策は米の増産を奨励し、転作を禁止する政策である。",
             "answer": false,
             "explanation": "p.110周辺。米生産抑制・転作奨励。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8265,6 +8619,9 @@
             "answer": true,
             "explanation": "p.110・p.120。関税化=完全自由化でも完全禁止でもない。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-tariffication-1",
@@ -8279,6 +8636,9 @@
             "statement": "関税化とは、関税をすべて撤廃して農産物輸入を完全自由化することである。",
             "answer": false,
             "explanation": "p.110・p.120。数量制限から関税へ。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8295,6 +8655,9 @@
             "answer": true,
             "explanation": "p.110周辺。農業の多面的機能。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-multifunction-1",
@@ -8309,6 +8672,9 @@
             "statement": "トレーサビリティは食品の生産・流通履歴を追跡できる仕組みである。",
             "answer": true,
             "explanation": "p.110。牛トレーサビリティ法など。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8325,6 +8691,9 @@
             "answer": false,
             "explanation": "p.110・p.111。契約解除はクーリング・オフ。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-traceability-2",
@@ -8339,6 +8708,9 @@
             "statement": "ポスト・ハーベストは収穫後に使われる農薬などと関係する語である。",
             "answer": true,
             "explanation": "p.110。細かめだが選択肢消去に使える。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8355,6 +8727,9 @@
             "answer": true,
             "explanation": "p.120。1×2×3=6のイメージ。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-110-sixth-2",
@@ -8369,6 +8744,9 @@
             "statement": "消費者の権利には、知らされる権利、安全を求める権利、意見を聞いてもらう権利、選ぶ権利などがある。",
             "answer": true,
             "explanation": "p.111。権利名の組み合わせ。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8385,6 +8763,9 @@
             "answer": true,
             "explanation": "p.111。消費者保護基本法からの流れで問われる。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-111-consumer-basic-1",
@@ -8399,6 +8780,9 @@
             "statement": "消費生活センターは消費者相談などと関係する機関である。",
             "answer": true,
             "explanation": "p.111。消費者庁・消費生活センターの識別。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8415,6 +8799,9 @@
             "answer": true,
             "explanation": "p.111。消費者行政の担当。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-111-consumer-agency-1",
@@ -8429,6 +8816,9 @@
             "statement": "依存効果は、広告などで消費者の欲望が生産者側から作られるという考え方である。",
             "answer": true,
             "explanation": "p.111。消費者主権への疑問。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8445,6 +8835,9 @@
             "answer": true,
             "explanation": "p.111。見せびらかし・周囲の影響。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-111-demonstration-2",
@@ -8459,6 +8852,9 @@
             "statement": "典型7公害には、大気汚染・水質汚濁・騒音・振動・悪臭などが含まれる。",
             "answer": true,
             "explanation": "p.112。典型7公害は細かい選択肢で出る。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8475,6 +8871,9 @@
             "answer": true,
             "explanation": "p.112。公害国会。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-112-pollution-diet-1",
@@ -8489,6 +8888,9 @@
             "statement": "公害国会では経済調和条項が強化され、環境より経済成長を優先することが明記された。",
             "answer": false,
             "explanation": "p.112。経済調和条項は削除の方向。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8505,6 +8907,9 @@
             "answer": true,
             "explanation": "p.112。濃度規制から総量規制へ。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-112-total-reg-1",
@@ -8519,6 +8924,9 @@
             "statement": "環境庁は後に環境省へ昇格した。",
             "answer": true,
             "explanation": "p.112。1971環境庁、2001環境省。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8535,6 +8943,9 @@
             "answer": true,
             "explanation": "p.112。環境アセスメントとは別。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-112-env-basic-1",
@@ -8549,6 +8960,9 @@
             "statement": "持続可能な発展は、将来世代の必要を損なわずに現在世代の必要を満たす考え方である。",
             "answer": true,
             "explanation": "p.113・p.149。環境と開発の定番。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8565,6 +8979,9 @@
             "answer": false,
             "explanation": "p.113・p.149。将来世代・環境との両立。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-113-sustainable-3",
@@ -8579,6 +8996,9 @@
             "statement": "予防原則は、科学的に完全に確実でなくても重大被害のおそれがあれば予防的に対応する考え方である。",
             "answer": true,
             "explanation": "p.113。事後対応だけではない。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8595,6 +9015,9 @@
             "answer": true,
             "explanation": "p.113。京都メカニズムとも接続。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-113-emission-2",
@@ -8609,6 +9032,9 @@
             "statement": "グリーン購入法は環境負荷の少ない製品を優先的に購入する考え方と関係する。",
             "answer": true,
             "explanation": "p.113。リサイクル法の細部。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8625,6 +9051,9 @@
             "answer": true,
             "explanation": "p.113。新しいエネルギー利用。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-113-cogeneration-1",
@@ -8639,6 +9068,9 @@
             "statement": "大阪空港訴訟は騒音公害など環境被害の論点と関係する。",
             "answer": true,
             "explanation": "p.123問題演習。細部だが公害訴訟系。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8655,6 +9087,9 @@
             "answer": true,
             "explanation": "p.123問題演習。開発と環境の対立。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-123-tomonoura-1",
@@ -8669,6 +9104,9 @@
             "statement": "ブレトンウッズ体制は金とドルの交換を前提に、ドルを基軸通貨とする固定相場制をとった。",
             "answer": true,
             "explanation": "p.147・p.156。金・ドル・固定相場。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8685,6 +9123,9 @@
             "answer": false,
             "explanation": "p.147・p.156。固定相場制。金・ドル本位制。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-bretton-2",
@@ -8699,6 +9140,9 @@
             "statement": "SDRはドル不足や国際流動性問題への対応として創設された特別引出権である。",
             "answer": true,
             "explanation": "p.147・プリント8。細かいが通貨体制で狙われる。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8715,6 +9159,9 @@
             "answer": false,
             "explanation": "p.147。SDRはIMF関係の特別引出権。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-sdr-2",
@@ -8729,6 +9176,9 @@
             "statement": "固定相場制は為替レートが安定しやすいが、金・ドル保有量などが金融政策を制約する。",
             "answer": true,
             "explanation": "p.147。メリットとデメリットの両方を見る。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8745,6 +9195,9 @@
             "answer": true,
             "explanation": "p.147。金との固定リンクではない。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-floating-1",
@@ -8759,6 +9212,9 @@
             "statement": "変動相場制では各国通貨が金と一定比率で交換されるため、為替リスクは存在しない。",
             "answer": false,
             "explanation": "p.147。金との固定リンクではない。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8775,6 +9231,9 @@
             "answer": true,
             "explanation": "p.147・p.156。GATT/WTO三原則。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-mfn-1",
@@ -8789,6 +9248,9 @@
             "statement": "内国民待遇は、輸入品を国内品と比べて不利に扱わないという考え方である。",
             "answer": true,
             "explanation": "p.147・p.156。最恵国待遇との区別。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8805,6 +9267,9 @@
             "answer": false,
             "explanation": "p.147。国内品との扱いは内国民待遇。最恵国待遇は国同士の無差別。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-mfn-2",
@@ -8819,6 +9284,9 @@
             "statement": "セーフガードは、輸入急増などに対して一時的な緊急輸入制限を認める仕組みである。",
             "answer": true,
             "explanation": "p.147・p.157。WTOでも例外的措置として出る。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8835,6 +9303,9 @@
             "answer": false,
             "explanation": "p.147・p.157。緊急輸入制限を認める側。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-safeguard-2",
@@ -8849,6 +9320,9 @@
             "statement": "ウルグアイ・ラウンドはWTO設立につながる重要な多角的貿易交渉である。",
             "answer": true,
             "explanation": "p.147。ラウンド名とWTOの接続。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8865,6 +9339,9 @@
             "answer": true,
             "explanation": "p.147。細かいが選択肢で出る可能性。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-147-doha-1",
@@ -8879,6 +9356,9 @@
             "statement": "多国籍企業は国境を越えて複数国に子会社や支店を持つ企業である。",
             "answer": true,
             "explanation": "p.148・p.160。単なる輸出企業ではない。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8895,6 +9375,9 @@
             "answer": false,
             "explanation": "p.148。国境を越える企業活動。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-global-2",
@@ -8909,6 +9392,9 @@
             "statement": "タックス・ヘイブンは税負担の低い国・地域と関係し、多国籍企業や国際資本移動の論点で出る。",
             "answer": true,
             "explanation": "p.148。グローバル化の論点。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8925,6 +9411,9 @@
             "answer": true,
             "explanation": "p.148。細かいが金融語として出る。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-derivative-1",
@@ -8939,6 +9428,9 @@
             "statement": "底辺への競争は、企業誘致のため法人税率や規制を下げ合う競争などを指す。",
             "answer": true,
             "explanation": "p.148。労働・環境基準の低下も文脈。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8955,6 +9447,9 @@
             "answer": true,
             "explanation": "p.148。細部だが国際経済協議。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-summit-1",
@@ -8969,6 +9464,9 @@
             "statement": "地域経済統合では、自由貿易圏、関税同盟、共同市場の順に統合の度合いが深まる。",
             "answer": true,
             "explanation": "p.148・p.160。統合段階の順序。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -8985,6 +9483,9 @@
             "answer": false,
             "explanation": "p.148・p.160。自由貿易圏=域内関税撤廃、関税同盟=域外共通関税。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-integration-level-2",
@@ -8999,6 +9500,9 @@
             "statement": "関税同盟は域内関税撤廃に加えて、域外に対する共通関税を設定する。",
             "answer": true,
             "explanation": "p.148・p.160。自由貿易圏との違い。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9015,6 +9519,9 @@
             "answer": true,
             "explanation": "p.148・p.160。共同市場は統合度が高い。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-common-market-1",
@@ -9029,6 +9536,9 @@
             "statement": "AFTAはASEANの自由貿易地域であり、北米の協定ではない。",
             "answer": true,
             "explanation": "p.148・p.160。AFTA=ASEAN。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9045,6 +9555,9 @@
             "answer": true,
             "explanation": "p.148・プリント9。AFTAより統合が深い。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-aec-1",
@@ -9059,6 +9572,9 @@
             "statement": "USMCAはNAFTAを引き継ぐ米国・メキシコ・カナダの協定である。",
             "answer": true,
             "explanation": "p.148・p.160。北米。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9075,6 +9591,9 @@
             "answer": true,
             "explanation": "p.148・p.160。南米。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-mercosur-1",
@@ -9089,6 +9608,9 @@
             "statement": "CPTPPは米国離脱後のTPP11として発効した枠組みである。",
             "answer": true,
             "explanation": "p.148・p.160。米国参加としない。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9105,6 +9627,9 @@
             "answer": false,
             "explanation": "p.148・p.160。米国離脱後の枠組み。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-148-cptpp-2",
@@ -9119,6 +9644,9 @@
             "statement": "BRICSやNIES、ASEAN4、中国などは新興国・地域の成長を比較するグラフ問題で狙われる。",
             "answer": true,
             "explanation": "p.161-162。グラフ読み取り。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9135,6 +9663,9 @@
             "answer": false,
             "explanation": "p.161-162。BRICSは新興国。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-161-brics-2",
@@ -9149,6 +9680,9 @@
             "statement": "マーストリヒト条約はEU設立、リスボン条約はEU機構改革と結びつける。",
             "answer": true,
             "explanation": "p.148・p.161。条約の役割を入れ替えない。"
+          },
+          "metadata": {
+            "stage": "8-10"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9165,6 +9699,9 @@
             "answer": false,
             "explanation": "p.148・p.161。ECSCは欧州統合初期、マーストリヒトはEU設立。"
           },
+          "metadata": {
+            "stage": "8-10"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-161-eu-treaty-2",
@@ -9179,6 +9716,9 @@
             "statement": "地球温暖化は、石炭・石油など化石燃料の消費による温室効果ガスの増加と関係する。",
             "answer": true,
             "explanation": "p.149・p.162-163。温暖化の原因。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9195,6 +9735,9 @@
             "answer": false,
             "explanation": "p.149。温暖化=温室効果ガス、オゾン層破壊=フロン。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-warming-2",
@@ -9209,6 +9752,9 @@
             "statement": "オゾン層破壊はフロンガスと関係し、高緯度地域のオゾンホールが論点となる。",
             "answer": true,
             "explanation": "p.149。フロン・オゾンホール。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9225,6 +9771,9 @@
             "answer": true,
             "explanation": "p.149。SOx/NOx。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-acid-rain-1",
@@ -9239,6 +9788,9 @@
             "statement": "酸性雨の主因はフロンガスであり、SOxやNOxは関係しない。",
             "answer": false,
             "explanation": "p.149。フロンはオゾン層、酸性雨はSOx/NOx。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9255,6 +9807,9 @@
             "answer": true,
             "explanation": "p.149・プリント12。会議名とスローガン。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-human-env-1",
@@ -9269,6 +9824,9 @@
             "statement": "1992年の国連環境開発会議では、持続可能な開発や気候変動枠組条約などが重要論点となる。",
             "answer": true,
             "explanation": "p.149。地球サミット。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9285,6 +9843,9 @@
             "answer": false,
             "explanation": "p.149。スローガンが逆。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-earth-summit-2",
@@ -9299,6 +9860,9 @@
             "statement": "名古屋議定書は遺伝資源の利用による利益の公正な配分と関係する。",
             "answer": true,
             "explanation": "プリント12。細かいが条約対象の識別。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9315,6 +9879,9 @@
             "answer": true,
             "explanation": "p.149・p.162-163。京都議定書の仕組み。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-kyoto-mech-1",
@@ -9329,6 +9896,9 @@
             "statement": "パリ協定は先進国だけでなく、すべての国が削減目標を提出する枠組みである。",
             "answer": true,
             "explanation": "p.149・p.162-163。京都議定書との違い。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9345,6 +9915,9 @@
             "answer": false,
             "explanation": "p.149・p.162-163。すべての国が参加する枠組み。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-paris-3",
@@ -9359,6 +9932,9 @@
             "statement": "水俣条約は水銀による汚染防止と関係する。",
             "answer": true,
             "explanation": "プリント12。条約対象の識別。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9375,6 +9951,9 @@
             "answer": true,
             "explanation": "プリント12。一次・二次エネルギー。"
           },
+          "metadata": {
+            "stage": "11-12"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-149-energy-1",
@@ -9389,6 +9968,9 @@
             "statement": "電力は石炭や石油と同じ一次エネルギーであり、二次エネルギーには含まれない。",
             "answer": false,
             "explanation": "プリント12。電力は二次エネルギー。"
+          },
+          "metadata": {
+            "stage": "11-12"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9405,6 +9987,9 @@
             "answer": true,
             "explanation": "p.150。南北問題の周辺論点。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-population-1",
@@ -9419,6 +10004,9 @@
             "statement": "地球環境問題では、先進国が引き起こした環境破壊は先進国の責任で解決すべきだという途上国側の主張がある。",
             "answer": true,
             "explanation": "p.150。環境と開発をめぐる対立。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9435,6 +10023,9 @@
             "answer": true,
             "explanation": "p.150・p.164-167。債務問題。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-debt-1",
@@ -9449,6 +10040,9 @@
             "statement": "累積債務問題は、途上国が債務をすべて返済し終えたため援助が不要になった問題である。",
             "answer": false,
             "explanation": "p.150。返済負担が増大する問題。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9465,6 +10059,9 @@
             "answer": true,
             "explanation": "p.150。UNCTAD=1964・貿易と開発。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-unctad-year-1",
@@ -9479,6 +10076,9 @@
             "statement": "プレビッシュ報告は、一次産品輸出国が不利になりやすい構造を指摘した。",
             "answer": true,
             "explanation": "p.150。モノカルチャー・一次産品と接続。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9495,6 +10095,9 @@
             "answer": false,
             "explanation": "p.150。一次産品輸出国の不利。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-prebisch-3",
@@ -9509,6 +10112,9 @@
             "statement": "NIEOは資源ナショナリズムを背景に、天然資源を自国で管理する権利などを主張した。",
             "answer": true,
             "explanation": "p.150。新国際経済秩序。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9525,6 +10131,9 @@
             "answer": false,
             "explanation": "p.150。途上国側の資源主権の主張。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-nieo-3",
@@ -9539,6 +10148,9 @@
             "statement": "ODAには対GNI比0.7%目標があるが、達成国は多くない。",
             "answer": true,
             "explanation": "p.150。細かいがODA論点。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9555,6 +10167,9 @@
             "answer": false,
             "explanation": "p.150。達成国は少ない。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-oda-07-2",
@@ -9569,6 +10184,9 @@
             "statement": "人間の安全保障は、国家だけでなく個人の生命や生活を貧困・戦争などから守る考え方である。",
             "answer": true,
             "explanation": "p.150。国家安全保障だけではない。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9585,6 +10203,9 @@
             "answer": false,
             "explanation": "p.150。個人の生命・生活を守る。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-human-security-3",
@@ -9599,6 +10220,9 @@
             "statement": "MDGsは2001年にまとめられ、2015年までの8目標とされる。",
             "answer": true,
             "explanation": "p.150。MDGs=2001・2015・8。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9615,6 +10239,9 @@
             "answer": true,
             "explanation": "p.150。SDGs=2016・2030・17。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-sdgs-year-1",
@@ -9629,6 +10256,9 @@
             "statement": "NGOの例として、国境なき医師団や地雷禁止国際キャンペーンなどが挙げられる。",
             "answer": true,
             "explanation": "p.150。国連機関ではない。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9645,6 +10275,9 @@
             "answer": true,
             "explanation": "p.150。ODAそのものではない。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-dev-import-1",
@@ -9659,6 +10292,9 @@
             "statement": "開発輸入は、先進国が途上国からの輸入をすべて禁止する政策である。",
             "answer": false,
             "explanation": "p.150。技術・資本提供と輸入。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9675,6 +10311,9 @@
             "answer": true,
             "explanation": "p.150・p.166。日本の国際協力。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-japan-oda-1",
@@ -9689,6 +10328,9 @@
             "statement": "日本のODAは技術協力を含まず、軍事用途に限定して行われる。",
             "answer": false,
             "explanation": "p.150・p.166。技術協力を含む。軍事用途回避が大綱で重要。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9705,6 +10347,9 @@
             "answer": true,
             "explanation": "p.150。ODA大綱1992。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-150-oda-charter-1",
@@ -9719,6 +10364,9 @@
             "statement": "開発協力大綱では、国益の確保への貢献や戦略性強化が明記された。",
             "answer": true,
             "explanation": "p.150。2015年の開発協力大綱。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9735,6 +10383,9 @@
             "answer": true,
             "explanation": "p.164-167。問題演習の識別論点。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-164-growth-model-1",
@@ -9749,6 +10400,9 @@
             "statement": "輸出主導型成長と輸入代替工業化は同じ政策で、どちらも輸入品を国内生産に置き換えることだけを意味する。",
             "answer": false,
             "explanation": "p.164-167。輸出主導と輸入代替は別。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9765,6 +10419,9 @@
             "answer": true,
             "explanation": "p.164-167。国際機関の役割識別。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-164-unicef-1",
@@ -9779,6 +10436,9 @@
             "statement": "OECDは先進国中心の経済協力機構であり、UNCTADやUNDPとは役割が異なる。",
             "answer": true,
             "explanation": "p.164-167。国際機関の混同対策。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9795,6 +10455,9 @@
             "answer": true,
             "explanation": "p.164-167。4編でも国際制度として再登場。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-164-wto-mfn-1",
@@ -9809,6 +10472,9 @@
             "statement": "国連安全保障理事会の常任理事国には拒否権がある。",
             "answer": true,
             "explanation": "p.164-167。国際制度の正誤で混ざる。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9825,6 +10491,9 @@
             "answer": false,
             "explanation": "p.164-167。拒否権は常任理事国。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-164-security-council-2",
@@ -9839,6 +10508,9 @@
             "statement": "IBRDなど国際金融機関では、出資比率が議決権に影響する仕組みがある。",
             "answer": true,
             "explanation": "p.164-167。国際制度の細かい正誤。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9855,6 +10527,9 @@
             "answer": true,
             "explanation": "p.167。AIIB・一帯一路・ODAの識別。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-167-aiib-1",
@@ -9869,6 +10544,9 @@
             "statement": "AIIBは日本の青年海外協力隊の別名であり、JICAの主要事業である。",
             "answer": false,
             "explanation": "p.167。JOCVとAIIBを混同しない。"
+          },
+          "metadata": {
+            "stage": "4-2-6"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9885,6 +10563,9 @@
             "answer": true,
             "explanation": "p.167。中国・AIIB・対外進出。"
           },
+          "metadata": {
+            "stage": "4-2-6"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-167-bri-1",
@@ -9899,6 +10580,9 @@
             "statement": "IMF・IBRD・UNDP・UNCTAD・JICAはすべて国際協力に関わるが、通貨安定、開発融資、人間開発、貿易と開発、日本の実施機関という役割は区別する。",
             "answer": true,
             "explanation": "横断。略語の役割をまとめて入れ替える問題に注意。"
+          },
+          "metadata": {
+            "stage": "all"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9915,6 +10599,9 @@
             "answer": false,
             "explanation": "横断。UNDP=HDI、UNCTAD=貿易と開発、JICA=日本の国際協力機構。"
           },
+          "metadata": {
+            "stage": "all"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-cross-2",
@@ -9929,6 +10616,9 @@
             "statement": "ニクソン・ショック、プラザ合意、円高不況、産業の空洞化は、国際通貨体制と日本経済の変化をつなげて問われやすい。",
             "answer": true,
             "explanation": "横断。p.108-109とp.147の接続。"
+          },
+          "metadata": {
+            "stage": "all"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
@@ -9945,6 +10635,9 @@
             "answer": false,
             "explanation": "横断。PPP=汚染者負担、アセス=事前評価、3R=循環、京都・パリ=温暖化条約。"
           },
+          "metadata": {
+            "stage": "all"
+          },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",
             "legacyId": "adv-cross-4",
@@ -9959,6 +10652,9 @@
             "statement": "GATT11条国とIMF8条国、FTAとEPA、MDGsとSDGsのように、似た語は対象・年・役割の違いで切る。",
             "answer": true,
             "explanation": "横断。本番は似た語の入れ替えが多い。"
+          },
+          "metadata": {
+            "stage": "all"
           },
           "source": {
             "sourcePath": "政経/memorization_game/index.html",

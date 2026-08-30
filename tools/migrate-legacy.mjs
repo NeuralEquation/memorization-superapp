@@ -64,6 +64,7 @@ async function migrateMemorization() {
     ...statements.map(statement => ({
       id: `judge:${statement.id}`, type: "true-false", importance: importance(statement.importance),
       payload: { statement: statement.statement, answer: statement.answer, explanation: statement.explain },
+      metadata: { stage: statement.stage },
       source: source("政経/memorization_game/index.html", { legacyId: statement.id, legacyMode: "judge" })
     }))
   ];
@@ -155,7 +156,7 @@ function verifyMemorization(raw, pack) {
   raw.statements.forEach(statement => {
     const exercise = exerciseMap.get(`judge:${statement.id}`);
     assert(exercise, `政経judge ${statement.id} が欠落しています`);
-    sameJson([exercise.payload.statement, exercise.payload.answer, exercise.payload.explanation, exercise.importance], [statement.statement, statement.answer, statement.explain, importance(statement.importance)], `政経judge ${statement.id} が変化しています`);
+    sameJson([exercise.payload.statement, exercise.payload.answer, exercise.payload.explanation, exercise.importance, exercise.metadata?.stage], [statement.statement, statement.answer, statement.explain, importance(statement.importance), statement.stage], `政経judge ${statement.id} が変化しています`);
   });
 }
 function verifyInorganic(raw, pack) {

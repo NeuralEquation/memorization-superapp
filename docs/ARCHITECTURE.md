@@ -8,6 +8,7 @@
 index.html
   └─ src/app.js ─┬─ src/core.js ───── src/exercise-types.js
                  ├─ src/exercise-registry.js
+                 ├─ src/game.js ───── XP・クエスト・ステージ・ボス
                  ├─ src/storage.js ── IndexedDB (memory-foundry)
                  └─ data/builtin-packs.json
 
@@ -37,6 +38,17 @@ tools/migrate-legacy.mjs ── data/builtin-packs.json
 
 `exercise-types.js` は type ごとの validation、採点、recall weight を定義し、`exercise-registry.js` は描画とユーザー入力の取得を定義します。`app.js` はこれらを組み合わせ、回答後の評価ボタンと画面遷移を制御します。
 
+## ゲーム進行
+
+`game.js` は元アプリのXP、レベル、コンボ、連続学習日、今日のミッション、バッジ、ゲームモード、ステージ抽出、ボス評価を共通化します。教材本文やMemory Engineの強度をゲーム値へ置き換えません。
+
+- 無機化学は `exercise.metadata.unit` を単元マップに使います。
+- 政経はconcept resourceとtrue-false exerciseに保持した `stage` を4範囲へまとめます。
+- 憲法は `constitution-stage` resourceの章、問題数、clearRate、star3Rateをそのまま使います。
+- 回答保存時はprogress、history、`meta.game`を同じIndexedDB transactionへ書き込みます。
+- ボス評価は60%以上で★1、80%以上でクリア★2、90%以上で★3です。途中終了・未回答はクリア率の分母から除外しません。
+- 条文連続復元は同一条文の複数clozeを一括採点し、各exerciseの進捗を個別に更新します。
+
 ## データの境界
 
 | 層 | 所有する内容 |
@@ -45,6 +57,7 @@ tools/migrate-legacy.mjs ── data/builtin-packs.json
 | IndexedDB `packs` | 組み込み教材の導入済みコピーとユーザー作成・import教材。 |
 | IndexedDB `progress` | exercise ごとの学習状態。key は `packId::exerciseId`。 |
 | IndexedDB `history` | 回答の監査・表示用履歴。 |
+| IndexedDB `meta.game` | XP、最高コンボ、連続学習日、教材・エリア別のボス評価。 |
 | Cache Storage | アプリシェル・教材のオフライン用キャッシュ。学習記録は入れない。 |
 
 Pack の内容と progress の整合性は exercise ID に依存します。学習済み exercise を含む pack を編集・import 置換する場合、IDを消す操作は UI 側で拒否します。
@@ -73,4 +86,3 @@ Service Worker は `file://` では動作しません。ローカル確認には
 - Backup Restore は全参照の検証後に transaction で置換します。検証失敗時は書き込みません。
 
 これは端末内保存のアプリです。ブラウザーのプロファイル削除・ストレージ初期化に対する自動復旧はありません。外部保存が必要なら Backup JSON を利用してください。
-

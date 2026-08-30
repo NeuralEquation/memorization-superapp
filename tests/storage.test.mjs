@@ -80,15 +80,27 @@ test("recordAttempt uses one readwrite transaction for progress and history", as
   assert.equal(db.stores.history.size, 1);
 });
 
+test("game progress is committed atomically with an answered question", async () => {
+  const db = memoryDb();
+  const meta = { builtinVersions: {}, game: { xp: 25, totalCorrect: 1, bestCombo: 1, dailyStreak: 1, lastActiveDate: "2026-08-30", bossClears: {} } };
+  await recordAttempt(db, progress, { ...history, id: "attempt-game" }, meta);
+  assert.deepEqual(db.transactions[0], { names: ["meta", "progress", "history"], mode: "readwrite" });
+  assert.equal(db.stores.meta.size, 1);
+  const restored = await loadAll(db);
+  assert.equal(restored.meta.game.xp, 25);
+});
+
 test("backup restore round-trip keeps archived pack, progress and history", async () => {
   const db = memoryDb();
   const archived = { ...pack, status: "archived" };
-  const backup = createBackup({ meta: { builtinVersions: {} }, packs: [archived], progress: [progress], history: [history] });
+  const backup = createBackup({ meta: { builtinVersions: {}, game: { xp: 500, bossClears: { [pack.id]: { "area:test": { stars: 3, rate: 1 } } } } }, packs: [archived], progress: [progress], history: [history] });
   await replaceFromBackup(db, backup);
   const restored = await loadAll(db);
   assert.equal(restored.packs[0].status, "archived");
   assert.equal(restored.progress[0].key, progress.key);
   assert.equal(restored.history[0].id, history.id);
+  assert.equal(restored.meta.game.xp, 500);
+  assert.equal(restored.meta.game.bossClears[pack.id]["area:test"].stars, 3);
 });
 
 test("complete pack deletion cascades to progress and history", async () => {

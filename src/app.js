@@ -15,16 +15,32 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.5.0";
-import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.5.0";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.5.0";
+} from "./core.js?v=1.6.1";
+import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.6.1";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.6.1";
 import {
   CONSTITUTION_MOCK_DURATION_MS,
   buildConstitutionMockModel,
   gradeConstitutionMock,
   isConstitutionMockTimedOut,
   selectConstitutionMockExercises
-} from "./constitution-mock.js?v=1.5.0";
+} from "./constitution-mock.js?v=1.6.1";
+import {
+  GAME_MODES,
+  bossDamage,
+  bossStars,
+  buildPuzzleTiles,
+  calculateXp,
+  gameStateAfterAttempt,
+  getPackStages,
+  levelFromXp,
+  missionProgress,
+  normalizeGameState,
+  rankName,
+  selectGameQueue,
+  stageMastery,
+  unlockedBadges
+} from "./game.js?v=1.6.1";
 import {
   createBackup,
   deletePackCompletely,
@@ -35,7 +51,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.5.0";
+} from "./storage.js?v=1.6.1";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -52,11 +68,13 @@ let pendingImport = null;
 let pendingDeleteId = null;
 let pendingBackup = null;
 let toastTimer = null;
+let gameTimer = null;
 let libraryVisibleExerciseIds = [];
 let libraryFilteredEntries = [];
 let librarySearchComposing = false;
 const openLibraryEntryIds = new Set();
 const libraryState = { packId: "", sectionId: "", query: "", importance: "all", status: "all", group: "all", favorite: "all", limit: 60 };
+const questState = { packId: "", stageId: "" };
 
 function showToast(message) {
   toast.textContent = message;
@@ -76,6 +94,37 @@ function formatDate(timestamp) {
 
 function refreshMaps() {
   progressMap = new Map(snapshot.progress.map(record => [record.key, record]));
+}
+
+function gameState() {
+  return normalizeGameState(snapshot.meta?.game);
+}
+
+async function persistGameState(game) {
+  snapshot.meta = { ...snapshot.meta, game: normalizeGameState(game) };
+  await putMeta(db, snapshot.meta);
+}
+
+function clearGameTimer() {
+  if (gameTimer) clearInterval(gameTimer);
+  gameTimer = null;
+}
+
+function startGameTimer() {
+  clearGameTimer();
+  if (!session?.deadline || session.completed) return;
+  gameTimer = setInterval(() => {
+    if (!session?.deadline || session.completed) return clearGameTimer();
+    session.secondsLeft = Math.max(0, Math.ceil((session.deadline - Date.now()) / 1000));
+    const timer = document.querySelector("[data-game-timer]");
+    if (timer) timer.textContent = session.mode === "blitz" ? `${session.secondsLeft}s` : `${String(Math.floor(session.secondsLeft / 60)).padStart(2, "0")}:${String(session.secondsLeft % 60).padStart(2, "0")}`;
+    if (session.secondsLeft <= 0) {
+      session.timedOut = true;
+      session.completed = true;
+      clearGameTimer();
+      renderStudy();
+    }
+  }, 250);
 }
 
 function packById(packId) {
@@ -119,6 +168,8 @@ function descriptionFor(pack) {
 }
 
 function appShell(content, active = currentView) {
+  const game = gameState();
+  const player = levelFromXp(game.xp);
   return `<div class="app-shell">
     <header class="site-header">
       <div class="header-inner">
@@ -128,10 +179,12 @@ function appShell(content, active = currentView) {
         </button>
         <nav class="main-nav" aria-label="メインメニュー">
           <button class="nav-button ${active === "home" ? "active" : ""}" data-action="navigate" data-view="home">教材</button>
+          <button class="nav-button ${active === "quests" ? "active" : ""}" data-action="navigate" data-view="quests">クエスト</button>
           <button class="nav-button ${active === "library" ? "active" : ""}" data-action="navigate" data-view="library">一覧</button>
           <button class="nav-button ${active === "progress" ? "active" : ""}" data-action="navigate" data-view="progress">学習記録</button>
           <button class="nav-button ${active === "manage" ? "active" : ""}" data-action="navigate" data-view="manage">管理</button>
         </nav>
+        <div class="player-mini" aria-label="プレイヤー状況"><span>Lv.${player.level}</span><span>🔥 ${game.dailyStreak}日</span><strong>✦ ${formatNumber(game.xp)} XP</strong></div>
       </div>
     </header>
     ${content}
@@ -174,26 +227,67 @@ function packCard(pack) {
   </article>`;
 }
 
+function missionCard(mission, icon) {
+  const percent = Math.min(100, Math.round(mission.current / mission.target * 100));
+  return `<article class="mission-card ${percent >= 100 ? "done" : ""}"><span class="mission-icon">${percent >= 100 ? "✓" : icon}</span><div><strong>${escapeHtml(mission.label)}</strong><small>${Math.min(mission.current, mission.target)} / ${mission.target}</small><span class="mission-track"><i style="width:${percent}%"></i></span></div><b>+XP</b></article>`;
+}
+
+function gameModeCard(mode, packId, stageId = "") {
+  const config = GAME_MODES[mode];
+  return `<button class="game-mode-card ${mode}" data-action="start-game" data-pack-id="${escapeHtml(packId)}" data-mode="${mode}" ${stageId ? `data-stage-id="${escapeHtml(stageId)}"` : ""}><span>${config.code}</span><h3>${escapeHtml(config.label)}</h3><p>${escapeHtml(config.description)}</p><b>→</b></button>`;
+}
+
+function renderStageMap(pack) {
+  const game = gameState();
+  const stages = getPackStages(pack);
+  const clears = game.bossClears?.[pack.id] || {};
+  if (!stages.length) return `<div class="empty-state"><p>この教材にはエリア情報がありません。</p></div>`;
+  return `<div class="stage-map">${stages.map(stage => {
+    const mastery = stageMastery(stage, pack.id, progressMap);
+    const clear = clears[stage.id];
+    return `<article class="stage-card ${clear?.stars >= 2 ? "cleared" : mastery > 0 ? "active" : ""}">
+      <div class="stage-head"><span>AREA ${String(stage.order).padStart(2, "0")}</span><b aria-label="ボス評価${clear?.stars || 0}">${clear ? "★".repeat(clear.stars) + "☆".repeat(3 - clear.stars) : "☆☆☆"}</b></div>
+      <h3>${escapeHtml(stage.name)}</h3><p>${escapeHtml(stage.detail || `${stage.exerciseIds.length}問`)}</p>
+      <div class="progress-track" aria-label="習熟度${mastery}%"><span style="width:${mastery}%"></span></div><small>${mastery}% 習熟 ・ ${stage.exerciseIds.length}問</small>
+      <div class="stage-actions"><button class="ghost" data-action="start-game" data-pack-id="${escapeHtml(pack.id)}" data-mode="adventure" data-stage-id="${escapeHtml(stage.id)}">学習</button><button class="secondary" data-action="start-game" data-pack-id="${escapeHtml(pack.id)}" data-mode="boss" data-stage-id="${escapeHtml(stage.id)}">ボス</button></div>
+    </article>`;
+  }).join("")}</div>`;
+}
+
+function renderQuests() {
+  const packs = snapshot.packs.filter(pack => pack.status === "active");
+  if (!packs.length) { currentView = "home"; renderHome(); return; }
+  if (!packs.some(pack => pack.id === questState.packId)) questState.packId = packs[0].id;
+  const pack = packById(questState.packId);
+  const stages = getPackStages(pack);
+  const defaultStage = stages[0]?.id || "";
+  const hasPuzzle = pack.exercises.some(exercise => ["cloze", "text-input"].includes(exercise.type));
+  const content = `<main id="main-content" class="page">
+    <div class="page-head"><div><p class="eyebrow">QUEST SELECT</p><h1>クエストを選ぶ</h1><p>元アプリのゲームモードを、同じ進捗とMemory Engineにつないで遊べます。</p></div><label class="quest-pack-select">教材<select data-quest-pack>${packs.map(item => `<option value="${escapeHtml(item.id)}" ${item.id === pack.id ? "selected" : ""}>${escapeHtml(item.title)}</option>`).join("")}</select></label></div>
+    <section><div class="section-head"><div><h2>ゲームモード</h2><p>XP、コンボ、復習間隔はすべて共通記録へ保存されます。</p></div></div>
+      <div class="game-mode-grid">${["daily", "adventure", "review", "blitz", "boss", "endless", "recognition", "strict"].map(mode => gameModeCard(mode, pack.id, mode === "boss" ? defaultStage : "")).join("")}${hasPuzzle ? gameModeCard("puzzle", pack.id) : ""}</div>
+      ${pack.id === "constitution-quest" ? `<div class="special-mode-row"><button class="secondary" data-action="start-article-rebuild" data-pack-id="${escapeHtml(pack.id)}">条文連続復元</button><button class="secondary" data-action="start-constitution-mock" data-pack-id="${escapeHtml(pack.id)}">15分本番模試</button></div>` : ""}
+    </section>
+    <section><div class="section-head"><div><h2>エリアマップ</h2><p>範囲を学習し、ボス戦で80%以上を取るとエリアクリアです。</p></div></div>${renderStageMap(pack)}</section>
+  </main>`;
+  app.innerHTML = appShell(content, "quests");
+}
+
 function renderHome() {
   const packs = snapshot.packs.filter(pack => pack.status === "active");
   const summary = aggregateSummary(packs);
   const nextPack = packs.find(pack => summarizePack(pack, progressMap).due > 0) || packs[0];
+  const game = gameState();
+  const player = levelFromXp(game.xp);
+  const missions = missionProgress(snapshot.history);
   const content = `<main id="main-content" class="page">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">CHOOSE. RECALL. STRENGTHEN.</p>
-        <h1>今、覚える教材を<br>すぐ始める。</h1>
-        <p>未学習・誤答・迷い・復習期限から、今やる問題を選びます。教材と記録は端末内に保存されます。</p>
-      </div>
-      <aside class="hero-aside">
-        <div><p class="eyebrow">MEMORY SNAPSHOT</p><h2>${nextPack ? "次に取り組むなら" : "教材を追加してください"}</h2>${nextPack ? `<p>${escapeHtml(nextPack.title)}</p>` : ""}</div>
-        <div class="hero-metrics">
-          <div class="hero-metric"><strong>${formatNumber(summary.mastered)}</strong><span>安定した項目</span></div>
-          <div class="hero-metric"><strong>${formatNumber(summary.due + summary.wrong)}</strong><span>優先復習</span></div>
-        </div>
-        ${nextPack ? `<button class="primary wide" data-action="start" data-pack-id="${escapeHtml(nextPack.id)}" data-mode="recommended">この教材を始める</button>` : `<button class="primary wide" data-action="navigate" data-view="manage">教材を追加</button>`}
-      </aside>
+    <section class="game-hero">
+      <div class="quest-hero"><p class="eyebrow">DAILY QUEST</p><h1>正解をつないで、<br>今日のエリアを進める。</h1><p>未学習・誤答・復習期限を優先しながらXPとコンボを獲得します。</p>${nextPack ? `<button class="primary" data-action="start-game" data-pack-id="${escapeHtml(nextPack.id)}" data-mode="daily">今日の5問に挑戦 <span>→</span></button>` : `<button class="primary" data-action="navigate" data-view="manage">教材を追加</button>`}<div class="hero-rewards"><span>✦ 正解でXP</span><span>⚡ 連続正解でコンボ</span><span>♜ ミスは後で再登場</span></div></div>
+      <aside class="player-card"><div class="player-avatar">F<span>Lv.${player.level}</span></div><p class="eyebrow">PLAYER RANK</p><h2>${rankName(player.level)}</h2><p>次のレベルまで ${player.required - player.current} XP</p><div class="xp-track"><i style="width:${player.progress}%"></i></div><small>${player.current} / ${player.required} XP</small></aside>
     </section>
+    <section class="game-stats"><div><strong>${formatNumber(game.xp)}</strong><span>総XP</span></div><div><strong>${game.dailyStreak}</strong><span>連続学習日</span></div><div><strong>${game.bestCombo}</strong><span>最高コンボ</span></div><div><strong>${summary.mastered}</strong><span>習得済み</span></div></section>
+    <div class="section-head"><div><h2>今日のミッション</h2><p>短い目標を積み上げて学習を続けます。</p></div></div><section class="mission-grid">${missions.missions.map((mission, index) => missionCard(mission, ["◈", "✓", "⚡"][index])).join("")}</section>
+    ${nextPack ? `<div class="section-head"><div><h2>ゲームモード</h2><p>${escapeHtml(nextPack.title)}ですぐ遊べます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="quests">すべて見る →</button></div><section class="game-mode-grid home-modes">${gameModeCard("adventure", nextPack.id)}${gameModeCard("blitz", nextPack.id)}${gameModeCard("boss", nextPack.id, getPackStages(nextPack)[0]?.id || "")}</section>` : ""}
     <div class="section-head"><div><h2>教材</h2><p>すぐ始めるか、一覧で内容を確認できます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="manage">管理</button></div>
     <section class="pack-grid" aria-label="Active教材一覧">
       ${packs.length ? packs.map(packCard).join("") : `<div class="empty-state"><h3>Active教材がありません</h3><p>Archiveから戻すか、教材JSONを追加してください。</p><button class="primary" data-action="navigate" data-view="manage">管理を開く</button></div>`}
@@ -366,10 +460,12 @@ function getStudyPool(pack, mode) {
 }
 
 function beginSession(packId, mode, queue, sourceExerciseIds = null) {
+  clearGameTimer();
   session = {
     packId,
     mode,
     queue,
+    targetCount: queue.length,
     sourceExerciseIds,
     index: 0,
     correct: 0,
@@ -382,10 +478,57 @@ function beginSession(packId, mode, queue, sourceExerciseIds = null) {
     usedHint: false,
     hint: "",
     retryCounts: {},
+    combo: 0,
+    bestCombo: 0,
+    xpEarned: 0,
+    answered: 0,
+    playerHp: 100,
+    bossHp: 100,
+    secondsLeft: GAME_MODES[mode]?.seconds || 0,
+    stageId: "",
+    stageName: "",
+    puzzleTiles: [],
+    puzzleSelected: [],
     completed: false
   };
   currentView = "study";
   render();
+}
+
+function startGameSession(packId, mode, stageId = "") {
+  const pack = packById(packId);
+  if (!pack || pack.status !== "active") return showToast("この教材ではクエストを開始できません");
+  let selectedStageId = stageId;
+  if (mode === "boss" && !selectedStageId) selectedStageId = getPackStages(pack)[0]?.id || "";
+  const queue = selectGameQueue(pack, progressMap, { mode, stageId: selectedStageId });
+  if (!queue.length) return showToast(mode === "review" ? "対象の弱点がないため、まず通常学習を進めてください" : "この条件に合う問題がありません");
+  beginSession(packId, mode, queue);
+  const stage = getPackStages(pack).find(item => item.id === selectedStageId);
+  session.stageId = selectedStageId;
+  session.stageName = stage?.name || "全範囲";
+  session.deadline = GAME_MODES[mode]?.seconds ? Date.now() + GAME_MODES[mode].seconds * 1000 : null;
+  renderStudy();
+  if (session.deadline) startGameTimer();
+}
+
+function articleRebuildCandidates(pack) {
+  return (pack.resources || []).filter(resource => resource.kind === "constitution-article" && (resource.segments || []).filter(segment => segment.type === "blank").length >= 2);
+}
+
+function startArticleRebuild(packId) {
+  const pack = packById(packId);
+  const candidates = articleRebuildCandidates(pack);
+  if (!candidates.length) return showToast("複数空欄のある条文がありません");
+  const article = candidates[Math.floor(Math.random() * candidates.length)];
+  const exerciseIds = article.segments.filter(segment => segment.type === "blank").map(segment => `cloze:${segment.blankId}`).filter(id => exerciseById(pack, id));
+  clearGameTimer();
+  session = {
+    packId, mode: "article", article, articleExerciseIds: exerciseIds, articleValues: {}, articleResult: null,
+    startedAt: Date.now(), questionStartedAt: Date.now(), correct: 0, wrong: 0, answered: 0, combo: 0,
+    bestCombo: 0, xpEarned: 0, retryCounts: {}, completed: false
+  };
+  currentView = "study";
+  renderStudy();
 }
 
 function startSession(packId, mode) {
@@ -537,7 +680,7 @@ function renderMockResult(pack) {
   }).join("")}</section>` : `<p class="mock-all-correct">全問正解です。</p>`;
   return appShell(`<main id="main-content" class="study-page"><div class="study-wrap"><section class="study-result mock-result">
     <p class="eyebrow">15-MINUTE MOCK COMPLETE</p><h1>${result.correct} / ${result.total}</h1><p class="mock-score">${result.accuracy}%</p>
-    <div class="summary-grid"><div class="summary-card"><strong>${result.incorrect}</strong><span>不正解</span></div><div class="summary-card"><strong>${result.unanswered}</strong><span>未回答</span></div><div class="summary-card"><strong>${formatMockTime(elapsed)}</strong><span>所要時間</span></div></div>
+    <div class="summary-grid"><div class="summary-card"><strong>+${mockSession.xpEarned || 0}</strong><span>獲得XP</span></div><div class="summary-card"><strong>${result.incorrect}</strong><span>不正解</span></div><div class="summary-card"><strong>${result.unanswered}</strong><span>未回答</span></div><div class="summary-card"><strong>${formatMockTime(elapsed)}</strong><span>所要時間</span></div></div>
     ${mockSession.timedOut ? `<p class="hint-box">時間切れで自動提出しました。</p>` : ""}${wrongList}
     <div class="button-row" style="justify-content:center"><button class="primary" data-action="restart-constitution-mock">別の30問</button>${wrongItems.length ? `<button class="secondary" data-action="mock-review-wrong">間違えた問題だけ復習</button>` : ""}<button class="ghost" data-action="quit-mock">教材一覧へ</button></div>
   </section></div></main>`, "study");
@@ -589,8 +732,16 @@ async function submitConstitutionMock(timedOut = false) {
   const pack = packById(activeMock.packId);
   const result = gradeConstitutionMock(pack, activeMock.selectedExerciseIds, activeMock.responses);
   const now = Date.now();
+  let nextGame = gameState();
+  let combo = 0;
+  let xpEarned = 0;
   try {
-    for (const item of result.items) {
+    for (let index = 0; index < result.items.length; index += 1) {
+      const item = result.items[index];
+      combo = item.correct ? combo + 1 : 0;
+      const xp = item.correct ? 5 : 0;
+      xpEarned += xp;
+      nextGame = gameStateAfterAttempt(nextGame, { correct: item.correct, combo, xp, now });
       const previous = progressMap.get(progressKey(pack.id, item.exerciseId));
       const progress = updateMemory(previous, {
         packId: pack.id,
@@ -600,18 +751,20 @@ async function submitConstitutionMock(timedOut = false) {
         rating: item.correct ? "good" : "again",
         usedHint: false,
         sessionMode: "mock"
-      }, now);
+      }, now + index);
       const history = {
         id: randomId("attempt"), packId: pack.id, exerciseId: item.exerciseId,
         interactionType: "cloze", originalType: "cloze", correct: item.correct,
-        rating: item.correct ? "good" : "again", usedHint: false, sessionMode: "mock", attemptedAt: now
+        rating: item.correct ? "good" : "again", usedHint: false, sessionMode: "mock", attemptedAt: now + index, xp, combo
       };
-      await recordAttempt(db, progress, history);
+      const nextMeta = index === result.items.length - 1 ? { ...snapshot.meta, game: nextGame } : null;
+      await recordAttempt(db, progress, history, nextMeta);
       const existingIndex = snapshot.progress.findIndex(record => record.key === progress.key);
       if (existingIndex >= 0) snapshot.progress[existingIndex] = progress; else snapshot.progress.push(progress);
       snapshot.history.unshift(history);
       progressMap.set(progress.key, progress);
     }
+    snapshot.meta = { ...snapshot.meta, game: nextGame };
   } catch (error) {
     activeMock.submitting = false;
     showToast(`模試結果を保存できませんでした: ${error.message}`);
@@ -623,6 +776,7 @@ async function submitConstitutionMock(timedOut = false) {
   activeMock.timedOut = timedOut;
   activeMock.submittedAt = now;
   activeMock.result = result;
+  activeMock.xpEarned = xpEarned;
   clearMockStorage();
   mockSession = activeMock;
   renderMock();
@@ -694,13 +848,34 @@ function currentPresentation() {
   if (session.presentationKey === key && session.presentation) return session.presentation;
   const pack = packById(session.packId);
   const record = progressMap.get(progressKey(pack.id, base.id));
-  session.presentation = session.mode === "recommended" && !(record?.attempts) ? recognitionVersion(pack, base) : base;
+  session.presentation = session.mode === "recognition" || (session.mode === "recommended" && !(record?.attempts)) ? recognitionVersion(pack, base) : base;
   session.presentationKey = key;
   return session.presentation;
 }
 
+function ensurePuzzle(presentation) {
+  const key = `${session.index}:${presentation.id}`;
+  if (session.puzzleKey === key) return;
+  const answer = firstAcceptedAnswer(presentation);
+  session.puzzleKey = key;
+  session.puzzleTiles = buildPuzzleTiles(answer);
+  session.puzzleSelected = [];
+}
+
+function renderPuzzleAnswer(presentation) {
+  ensurePuzzle(presentation);
+  const selected = session.puzzleSelected || [];
+  const assembled = selected.map(id => session.puzzleTiles.find(tile => tile.id === id)?.text || "").join("");
+  const available = session.puzzleTiles.filter(tile => !selected.includes(tile.id));
+  return `<div class="puzzle-board"><div class="puzzle-answer">${assembled ? escapeHtml(assembled) : "<span>下のタイルを順番に選択</span>"}</div><div class="puzzle-tiles">${available.map(tile => `<button data-action="puzzle-add" data-tile-id="${tile.id}">${escapeHtml(tile.text)}</button>`).join("")}</div>${selected.length ? `<button class="text-button" data-action="puzzle-undo">1つ戻す</button>` : ""}</div>`;
+}
+
 function studyModeLabel(mode) {
-  return { recommended: "おすすめ学習", weak: "弱点復習", cram: "試験直前", full: "全文想起", library: "一覧から学習" }[mode] || "学習";
+  return {
+    recommended: "おすすめ学習", weak: "弱点復習", cram: "試験直前", full: "全文想起", library: "一覧から学習",
+    daily: "今日のクエスト", adventure: "冒険モード", review: "復習ハント", blitz: "60秒ブリッツ", boss: "ボスバトル",
+    endless: "エンドレス", recognition: "4択・意味つなぎ", strict: "本番入力", puzzle: "復元パズル", article: "条文連続復元"
+  }[mode] || "学習";
 }
 
 function renderRatingButtons(presentation) {
@@ -714,12 +889,118 @@ function renderRatingButtons(presentation) {
   </div>`;
 }
 
+function isGameSession(mode = session?.mode) {
+  return Boolean(GAME_MODES[mode] || mode === "article");
+}
+
+function sessionAccuracy() {
+  const total = session.mode === "boss" ? Math.max(session.targetCount, session.answered) : session.correct + session.wrong;
+  return total ? session.correct / total : 0;
+}
+
+function persistBossResult() {
+  if (session?.mode !== "boss" || !session.stageId || session.bossResultSaved) return;
+  session.bossResultSaved = true;
+  const pack = packById(session.packId);
+  const stage = getPackStages(pack).find(item => item.id === session.stageId);
+  const rate = sessionAccuracy();
+  const stars = bossStars(rate, stage);
+  if (!stars) return;
+  const game = gameState();
+  const packClears = { ...(game.bossClears[pack.id] || {}) };
+  const previous = packClears[stage.id];
+  if (!previous || stars > previous.stars || rate > previous.rate) packClears[stage.id] = { stars, rate, date: new Date().toISOString() };
+  persistGameState({ ...game, bossClears: { ...game.bossClears, [pack.id]: packClears } }).catch(error => showToast(`ボス記録を保存できませんでした: ${error.message}`));
+}
+
+function renderArticleRebuild(pack) {
+  const article = session.article;
+  const results = session.articleResult || {};
+  const resultValues = Object.values(results);
+  const allCorrect = resultValues.length > 0 && resultValues.every(Boolean);
+  const content = `<main id="main-content" class="study-page"><div class="study-wrap">
+    <div class="study-hud"><button class="ghost" data-action="quit-study">中断</button><span class="study-count">条文連続復元 ・ ${session.articleExerciseIds.length}空欄</span></div>
+    <article class="question-card article-rebuild-card"><div class="question-meta"><span class="type-chip">条文連続復元</span><span class="subject-chip">${escapeHtml(article.title || `第${article.articleNumber}条`)}</span></div>
+      <form id="article-rebuild-form"><div class="article-rebuild-text">${article.segments.map(segment => {
+        if (segment.type === "text") return renderRichText(segment.text);
+        const exerciseId = `cloze:${segment.blankId}`;
+        const value = session.articleValues[exerciseId] || "";
+        const result = results[exerciseId];
+        return `<input class="inline-rebuild-input ${result == null ? "" : result ? "correct" : "wrong"}" name="${escapeHtml(exerciseId)}" value="${escapeHtml(value)}" autocomplete="off" aria-label="空欄の答え">`;
+      }).join("")}</div></form>
+      ${resultValues.length ? `<div class="article-result ${allCorrect ? "correct" : "wrong"}"><strong>${resultValues.filter(Boolean).length} / ${resultValues.length} 正解</strong><span>${allCorrect ? `条文を完全復元しました。+${session.xpEarned} XP` : "赤い空欄を直して再挑戦できます。"}</span></div>` : ""}
+      <footer class="question-footer"><button class="ghost" data-action="new-article-rebuild" data-pack-id="${escapeHtml(pack.id)}">別の条文</button><button class="primary" type="submit" form="article-rebuild-form">一括判定</button></footer>
+    </article></div></main>`;
+  app.innerHTML = appShell(content, "study");
+}
+
+async function submitArticleRebuild(form) {
+  if (!session || session.mode !== "article" || session.saving) return;
+  session.saving = true;
+  const pack = packById(session.packId);
+  const formData = new FormData(form);
+  const now = Date.now();
+  const outcomes = session.articleExerciseIds.map(exerciseId => {
+    const exercise = exerciseById(pack, exerciseId);
+    const value = String(formData.get(exerciseId) || "");
+    session.articleValues[exerciseId] = value;
+    return { exercise, exerciseId, value, grade: getHandler(exercise.type).grade(exercise, value) };
+  });
+  const allCorrect = outcomes.every(item => item.grade.correct);
+  let nextGame = gameState();
+  let combo = session.combo;
+  try {
+    for (let index = 0; index < outcomes.length; index += 1) {
+      const item = outcomes[index];
+      combo = item.grade.correct ? combo + 1 : 0;
+      const previous = progressMap.get(progressKey(pack.id, item.exerciseId));
+      const progress = updateMemory(previous, {
+        packId: pack.id, exerciseId: item.exerciseId, interactionType: item.exercise.type, correct: item.grade.correct,
+        rating: item.grade.correct ? "good" : "again", sessionMode: "article", responseMs: now - session.questionStartedAt
+      }, now + index);
+      const xp = index === outcomes.length - 1 && allCorrect ? 8 : 0;
+      nextGame = gameStateAfterAttempt(nextGame, { correct: item.grade.correct, combo, xp, now });
+      const history = {
+        id: randomId("attempt"), packId: pack.id, exerciseId: item.exerciseId, interactionType: item.exercise.type,
+        originalType: item.exercise.type, correct: item.grade.correct, rating: item.grade.correct ? "good" : "again",
+        usedHint: false, responseMs: now - session.questionStartedAt, sessionMode: "article", attemptedAt: now + index,
+        xp, combo
+      };
+      const nextMeta = index === outcomes.length - 1 ? { ...snapshot.meta, game: nextGame } : null;
+      await recordAttempt(db, progress, history, nextMeta);
+      const existingIndex = snapshot.progress.findIndex(record => record.key === progress.key);
+      if (existingIndex >= 0) snapshot.progress[existingIndex] = progress; else snapshot.progress.push(progress);
+      snapshot.history.unshift(history);
+      progressMap.set(progress.key, progress);
+    }
+    snapshot.meta = { ...snapshot.meta, game: nextGame };
+    session.articleResult = Object.fromEntries(outcomes.map(item => [item.exerciseId, item.grade.correct]));
+    session.correct = outcomes.filter(item => item.grade.correct).length;
+    session.wrong = outcomes.length - session.correct;
+    session.answered = outcomes.length;
+    session.combo = combo;
+    session.bestCombo = Math.max(session.bestCombo, combo);
+    session.xpEarned = allCorrect ? 8 : 0;
+    session.questionStartedAt = Date.now();
+  } catch (error) {
+    showToast(`保存できませんでした: ${error.message}`);
+  }
+  session.saving = false;
+  renderArticleRebuild(pack);
+}
+
 function renderStudyResult(pack) {
-  const total = session.correct + session.wrong;
+  const total = session.mode === "boss" ? Math.max(session.targetCount, session.answered) : session.correct + session.wrong;
   const accuracy = total ? Math.round(session.correct / total * 100) : 0;
+  const boss = session.mode === "boss";
+  if (boss) persistBossResult();
+  const stage = boss ? getPackStages(pack).find(item => item.id === session.stageId) : null;
+  const stars = boss ? bossStars(accuracy / 100, stage) : 0;
+  const won = boss ? accuracy / 100 >= (stage?.clearRate || .8) : true;
   return appShell(`<main id="main-content" class="study-page"><div class="study-wrap"><section class="study-result">
-    <p class="eyebrow">SESSION COMPLETE</p><h1>${accuracy}%</h1><p>${escapeHtml(pack.title)}の学習を保存しました。同日中のやり直しは長期定着として過大評価しません。</p>
-    <div class="summary-grid"><div class="summary-card"><strong>${session.correct}</strong><span>正解</span></div><div class="summary-card"><strong>${session.wrong}</strong><span>不正解</span></div><div class="summary-card"><strong>${total}</strong><span>回答</span></div><div class="summary-card"><strong>${Math.max(1, Math.round((Date.now() - session.startedAt) / 60_000))}</strong><span>分</span></div></div>
+    <div class="result-emblem">${boss ? (won ? "🏆" : "🛡️") : "🎉"}</div><p class="eyebrow">QUEST COMPLETE</p><h1>${boss ? (won ? "ボス撃破！" : "再挑戦しよう") : `${accuracy}%`}</h1><p>${escapeHtml(pack.title)}の学習を保存しました。${session.timedOut ? "制限時間が終了しました。" : ""}</p>
+    ${boss ? `<div class="boss-stars" aria-label="ボス評価${stars}">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</div><p>${escapeHtml(session.stageName)} ・ ${accuracy >= 80 ? "エリアクリア" : "80%以上でクリア"}</p>` : ""}
+    <div class="summary-grid"><div class="summary-card"><strong>+${session.xpEarned || 0}</strong><span>獲得XP</span></div><div class="summary-card"><strong>${session.bestCombo || 0}</strong><span>最大コンボ</span></div><div class="summary-card"><strong>${accuracy}%</strong><span>正答率</span></div><div class="summary-card"><strong>${gameState().dailyStreak}</strong><span>連続学習日</span></div></div>
     <div class="button-row" style="justify-content:center"><button class="primary" data-action="restart-session">もう一度</button><button class="ghost" data-action="quit-study">教材一覧へ</button></div>
   </section></div></main>`, "study");
 }
@@ -729,7 +1010,13 @@ function renderStudy() {
   if (!pack || pack.status !== "active") {
     session = null; currentView = "home"; renderHome(); return;
   }
+  if (session.mode === "article") return renderArticleRebuild(pack);
+  if (session.mode === "endless" && !session.completed && session.index >= session.queue.length) {
+    session.queue = selectGameQueue(pack, progressMap, { mode: "endless", stageId: session.stageId });
+    session.index = 0;
+  }
   if (session.completed || session.index >= session.queue.length) {
+    clearGameTimer();
     session.completed = true;
     app.innerHTML = renderStudyResult(pack);
     return;
@@ -746,16 +1033,22 @@ function renderStudy() {
   const meta = resourceTitle || base.metadata?.unit || base.group || base.source?.sourceKind || pack.subject.name;
   const answerContent = session.result
     ? `${renderFeedback(presentation, session.result)}${renderRatingButtons(presentation)}`
-    : `${session.hint ? `<div class="hint-box">${escapeHtml(session.hint)}</div>` : ""}${handler.renderAnswer(presentation)}`;
+    : `${session.hint ? `<div class="hint-box">${escapeHtml(session.hint)}</div>` : ""}${session.mode === "puzzle" ? renderPuzzleAnswer(presentation) : handler.renderAnswer(presentation)}`;
   const canHint = !session.result && ["text-input", "cloze"].includes(presentation.type);
   const isReveal = ["self-grade", "full-recall"].includes(presentation.type);
+  const gameHud = isGameSession() ? `<div class="battle-hud">
+    <div><small>${session.mode === "boss" ? "PLAYER HP" : "正解"}</small><strong>${session.mode === "boss" ? `${session.playerHp} HP` : session.correct}</strong><span><i style="width:${session.mode === "boss" ? session.playerHp : Math.min(100, session.correct / Math.max(1, session.answered) * 100)}%"></i></span></div>
+    <div class="combo-or-timer"><strong>${session.deadline ? `<span data-game-timer>${session.mode === "blitz" ? `${session.secondsLeft}s` : `${String(Math.floor(session.secondsLeft / 60)).padStart(2, "0")}:${String(session.secondsLeft % 60).padStart(2, "0")}`}</span>` : `${session.combo}×`}</strong><small>${session.deadline ? "TIME" : "COMBO"}</small></div>
+    <div><small>${session.mode === "boss" ? "BOSS HP" : "SESSION XP"}</small><strong>${session.mode === "boss" ? `${session.bossHp} HP` : `+${session.xpEarned}`}</strong><span><i style="width:${session.mode === "boss" ? session.bossHp : Math.min(100, session.xpEarned)}%"></i></span></div>
+  </div>` : "";
   const content = `<main id="main-content" class="study-page"><div class="study-wrap">
-    <div class="study-hud"><button class="ghost" data-action="quit-study">中断</button><div class="progress-track" aria-label="進捗${progress}%"><span style="width:${progress}%"></span></div><span class="study-count">${session.index + 1} / ${session.queue.length}</span></div>
+    <div class="study-hud"><button class="ghost" data-action="${session.mode === "endless" ? "finish-game" : "quit-study"}">${session.mode === "endless" ? "終了" : "中断"}</button><div class="progress-track" aria-label="進捗${progress}%"><span style="width:${progress}%"></span></div><span class="study-count">${session.index + 1} / ${session.mode === "endless" ? "∞" : session.queue.length}</span></div>
+    ${gameHud}
     <article class="question-card">
       <div class="question-meta"><span class="type-chip">${escapeHtml(handler.label)}</span><span class="subject-chip">${escapeHtml(meta)}</span><span class="status-chip">${escapeHtml(studyModeLabel(session.mode))}</span></div>
       <div class="question-main"><h1>${handler.renderPrompt(presentation)}</h1></div>
       <div class="answer-area">${answerContent}</div>
-      ${session.result ? "" : `<footer class="question-footer"><div>${canHint ? `<button class="text-button" data-action="hint">ヒントを見る</button>` : ""}</div>${isReveal ? "" : `<button class="primary" data-action="submit-answer">判定する</button>`}</footer>`}
+      ${session.result ? "" : `<footer class="question-footer"><div>${canHint && session.mode !== "boss" && session.mode !== "strict" ? `<button class="text-button" data-action="hint">ヒントを見る</button>` : ""}</div>${isReveal ? "" : `<button class="primary" data-action="${session.mode === "puzzle" ? "puzzle-submit" : "submit-answer"}" ${session.mode === "puzzle" && !session.puzzleSelected.length ? "disabled" : ""}>判定する</button>`}</footer>`}
     </article>
   </div></main>`;
   app.innerHTML = appShell(content, "study");
@@ -764,6 +1057,9 @@ function renderStudy() {
 
 function renderProgress() {
   const total = aggregateSummary(snapshot.packs);
+  const game = gameState();
+  const level = levelFromXp(game.xp);
+  const badges = unlockedBadges(game, snapshot.progress);
   const accuracyBase = snapshot.progress.reduce((sum, record) => sum + (record.attempts || 0), 0);
   const correct = snapshot.progress.reduce((sum, record) => sum + (record.correct || 0), 0);
   const recent = snapshot.history.slice(0, 30);
@@ -773,7 +1069,9 @@ function renderProgress() {
   }).join("");
   const content = `<main id="main-content" class="page">
     <div class="page-head"><div><p class="eyebrow">MEMORY EVIDENCE</p><h1>学習記録</h1><p>正誤だけでなく、問題形式・ヒント・迷い・経過日数・回答速度を記録しています。</p></div></div>
-    <section class="summary-grid"><div class="summary-card"><strong>${total.mastered}</strong><span>安定した項目</span></div><div class="summary-card"><strong>${accuracyBase ? Math.round(correct / accuracyBase * 100) : 0}%</strong><span>総合正答率</span></div><div class="summary-card"><strong>${total.wrong}</strong><span>最近のミス</span></div><div class="summary-card"><strong>${snapshot.history.length}</strong><span>回答履歴</span></div></section>
+    <section class="player-record"><div class="player-avatar">F<span>Lv.${level.level}</span></div><div><p class="eyebrow">PLAYER RECORD</p><h2>${rankName(level.level)}</h2><div class="xp-track"><i style="width:${level.progress}%"></i></div><small>${formatNumber(game.xp)} XP ・ 次まで ${level.required - level.current} XP</small></div></section>
+    <section class="summary-grid"><div class="summary-card"><strong>${formatNumber(game.xp)}</strong><span>総XP</span></div><div class="summary-card"><strong>${game.dailyStreak}</strong><span>連続学習日</span></div><div class="summary-card"><strong>${game.bestCombo}</strong><span>最高コンボ</span></div><div class="summary-card"><strong>${total.mastered}</strong><span>安定した項目</span></div><div class="summary-card"><strong>${accuracyBase ? Math.round(correct / accuracyBase * 100) : 0}%</strong><span>総合正答率</span></div><div class="summary-card"><strong>${snapshot.history.length}</strong><span>回答履歴</span></div></section>
+    <section class="panel badge-panel"><h2>バッジコレクション</h2><div class="badge-grid">${badges.map(badge => `<div class="badge ${badge.unlocked ? "unlocked" : ""}"><i>${badge.icon}</i><strong>${escapeHtml(badge.name)}</strong></div>`).join("")}</div></section>
     <div class="two-column"><section class="panel"><h2>教材別</h2><div class="manage-list">${packRows || "<p>教材がありません。</p>"}</div></section>
     <section class="panel"><h2>最近の回答</h2><div class="history-list">${recent.length ? recent.map(entry => {
       const pack = packById(entry.packId); const exercise = exerciseById(pack, entry.exerciseId);
@@ -812,6 +1110,7 @@ function renderManage() {
 function render() {
   if (currentView === "study" && session) renderStudy();
   else if (currentView === "mock" && mockSession) renderMock();
+  else if (currentView === "quests") renderQuests();
   else if (currentView === "library") renderLibrary();
   else if (currentView === "progress") renderProgress();
   else if (currentView === "manage") renderManage();
@@ -819,6 +1118,7 @@ function render() {
 }
 
 function navigate(view) {
+  clearGameTimer();
   if (view !== "study") session = null;
   if (view !== "mock") {
     clearMockTimer();
@@ -853,6 +1153,16 @@ function submitAnswer() {
   renderStudy();
 }
 
+function submitPuzzle() {
+  const presentation = currentPresentation();
+  ensurePuzzle(presentation);
+  if (!session.puzzleSelected.length) return showToast("タイルを選んでください");
+  const response = session.puzzleSelected.map(id => session.puzzleTiles.find(tile => tile.id === id)?.text || "").join("");
+  session.result = getHandler(presentation.type).grade(presentation, response);
+  session.response = response;
+  renderStudy();
+}
+
 function revealAnswer() {
   session.result = { correct: null, expected: expectedAnswer(currentPresentation()) };
   renderStudy();
@@ -875,6 +1185,10 @@ async function rateAnswer(rating) {
   const selfGrade = ["self-grade", "full-recall"].includes(presentation.type);
   const correct = selfGrade ? rating !== "again" : Boolean(session.result?.correct);
   const now = Date.now();
+  const nextCombo = correct ? activeSession.combo + 1 : 0;
+  const xp = calculateXp({ correct, combo: nextCombo, exercise: base, responseMs: now - session.questionStartedAt, mode: activeSession.mode });
+  const nextGame = gameStateAfterAttempt(gameState(), { correct, combo: nextCombo, xp, now });
+  const nextMeta = { ...snapshot.meta, game: nextGame };
   const key = progressKey(pack.id, base.id);
   const previous = progressMap.get(key);
   const progress = updateMemory(previous, {
@@ -899,10 +1213,12 @@ async function rateAnswer(rating) {
     usedHint: session.usedHint,
     responseMs: now - session.questionStartedAt,
     sessionMode: session.mode,
-    attemptedAt: now
+    attemptedAt: now,
+    xp,
+    combo: nextCombo
   };
   try {
-    await recordAttempt(db, progress, history);
+    await recordAttempt(db, progress, history, nextMeta);
   } catch (error) {
     activeSession.saving = false;
     document.querySelectorAll('[data-action="rate"]').forEach(button => {
@@ -915,12 +1231,29 @@ async function rateAnswer(rating) {
   if (existingIndex >= 0) snapshot.progress[existingIndex] = progress;
   else snapshot.progress.push(progress);
   snapshot.history.unshift(history);
+  snapshot.meta = nextMeta;
   progressMap.set(key, progress);
-  if (correct) activeSession.correct += 1;
+  activeSession.combo = nextCombo;
+  activeSession.bestCombo = Math.max(activeSession.bestCombo, nextCombo);
+  activeSession.xpEarned += xp;
+  activeSession.answered += 1;
+  if (activeSession.mode === "boss") {
+    activeSession.damageDealt = (activeSession.damageDealt || 0) + bossDamage({ correct, combo: nextCombo, exercise: base });
+    const stage = getPackStages(pack).find(item => item.id === activeSession.stageId);
+    const clearRate = stage?.clearRate || .8;
+    const correctCount = activeSession.correct + (correct ? 1 : 0);
+    const bossRate = correctCount / Math.max(activeSession.targetCount, activeSession.answered);
+    activeSession.bossHp = Math.max(0, 100 - Math.round(bossRate / clearRate * 100));
+    if (!correct) activeSession.playerHp = Math.max(0, activeSession.playerHp - 22);
+  }
+  if (correct) {
+    activeSession.correct += 1;
+    if ([3, 5, 10, 20].includes(nextCombo)) showToast(`${nextCombo}連続正解！`);
+  }
   else {
     activeSession.wrong += 1;
     const count = activeSession.retryCounts[base.id] || 0;
-    if (count < 2) {
+    if (count < 2 && activeSession.mode !== "blitz") {
       const prefix = activeSession.queue.slice(0, activeSession.index + 1);
       const remaining = activeSession.queue.slice(activeSession.index + 1);
       const rescheduled = scheduleWrongRetry(remaining, { ...base, __wrongRetry: true });
@@ -937,8 +1270,12 @@ async function rateAnswer(rating) {
   activeSession.presentationKey = null;
   activeSession.usedHint = false;
   activeSession.hint = "";
+  activeSession.puzzleKey = "";
+  activeSession.puzzleTiles = [];
+  activeSession.puzzleSelected = [];
   activeSession.questionStartedAt = Date.now();
-  if (activeSession.index >= activeSession.queue.length) activeSession.completed = true;
+  if (activeSession.mode === "boss" && activeSession.playerHp <= 0) activeSession.completed = true;
+  else if (activeSession.mode !== "endless" && activeSession.index >= activeSession.queue.length) activeSession.completed = true;
   activeSession.saving = false;
   if (session === activeSession) renderStudy();
 }
@@ -1076,6 +1413,8 @@ async function handleClick(event) {
   const action = button.dataset.action;
   try {
     if (action === "navigate") navigate(button.dataset.view);
+    else if (action === "start-game") startGameSession(button.dataset.packId, button.dataset.mode, button.dataset.stageId || "");
+    else if (action === "start-article-rebuild" || action === "new-article-rebuild") startArticleRebuild(button.dataset.packId);
     else if (action === "open-library") {
       openLibraryEntryIds.clear();
       libraryState.packId = button.dataset.packId;
@@ -1130,6 +1469,7 @@ async function handleClick(event) {
     else if (action === "start") startSession(button.dataset.packId, button.dataset.mode);
     else if (action === "start-constitution-mock") startConstitutionMock(button.dataset.packId);
     else if (action === "quit-study") navigate("home");
+    else if (action === "finish-game") { session.completed = true; clearGameTimer(); renderStudy(); }
     else if (action === "quit-mock") navigate("home");
     else if (action === "submit-constitution-mock") await submitConstitutionMock(false);
     else if (action === "restart-constitution-mock") startConstitutionMock("constitution-quest");
@@ -1139,8 +1479,16 @@ async function handleClick(event) {
       navigate("home");
       if (wrongIds.length) startLibrarySession(packId, wrongIds);
     }
-    else if (action === "restart-session") session.mode === "library" ? startLibrarySession(session.packId, session.sourceExerciseIds) : startSession(session.packId, session.mode);
+    else if (action === "restart-session") {
+      if (session.mode === "library") startLibrarySession(session.packId, session.sourceExerciseIds);
+      else if (session.mode === "article") startArticleRebuild(session.packId);
+      else if (isGameSession(session.mode)) startGameSession(session.packId, session.mode, session.stageId);
+      else startSession(session.packId, session.mode);
+    }
     else if (action === "submit-answer") submitAnswer();
+    else if (action === "puzzle-add") { if (!session.puzzleSelected.includes(button.dataset.tileId)) session.puzzleSelected.push(button.dataset.tileId); renderStudy(); }
+    else if (action === "puzzle-undo") { session.puzzleSelected.pop(); renderStudy(); }
+    else if (action === "puzzle-submit") submitPuzzle();
     else if (action === "reveal") revealAnswer();
     else if (action === "hint") showHint();
     else if (action === "rate") await rateAnswer(button.dataset.rating);
@@ -1197,6 +1545,19 @@ function handleLibraryChange(event) {
   renderLibrary();
 }
 
+function handleQuestChange(event) {
+  if (!event.target.matches("[data-quest-pack]")) return;
+  questState.packId = event.target.value;
+  questState.stageId = "";
+  renderQuests();
+}
+
+function handleSubmit(event) {
+  if (event.target.id !== "article-rebuild-form") return;
+  event.preventDefault();
+  submitArticleRebuild(event.target);
+}
+
 function handleLibraryToggle(event) {
   const card = event.target.closest?.("details[data-library-entry-id]");
   if (!card) return;
@@ -1240,7 +1601,7 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.5.0", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.6.1", { scope: "./" });
     if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -1280,7 +1641,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.5.0", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.6.1", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");
@@ -1312,6 +1673,8 @@ async function init() {
 app.addEventListener("click", handleClick);
 app.addEventListener("change", handleFile);
 app.addEventListener("change", handleLibraryChange);
+app.addEventListener("change", handleQuestChange);
+app.addEventListener("submit", handleSubmit);
 app.addEventListener("input", handleLibraryInput);
 app.addEventListener("input", handleMockInput);
 app.addEventListener("compositionstart", handleLibraryCompositionStart);
