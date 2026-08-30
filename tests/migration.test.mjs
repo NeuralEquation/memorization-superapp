@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { SUPPORTED_EXERCISE_TYPES, validatePack } from "../src/core.js";
+import { SUPPORTED_EXERCISE_TYPES, gradeExercise, validatePack } from "../src/core.js";
 import { registry } from "../src/exercise-registry.js";
 
 const bundle = JSON.parse(await readFile(new URL("../data/builtin-packs.json", import.meta.url), "utf8"));
@@ -54,6 +54,7 @@ test("constitution migration keeps article resources, ordered blank relationship
   const summary = pack.exercises.filter(exercise => exercise.id.startsWith("summary-cloze:"));
   const recall = pack.exercises.filter(exercise => exercise.type === "full-recall");
   assert.deepEqual([articles.length, chapters.length, stages.length, cloze.length, summary.length, recall.length], [104, 13, 13, 280, 8, 104]);
+  assert.equal(pack.metadata.contentVersion, "2");
   const segmentBlankIds = articles.flatMap(article => (article.segments || []).filter(segment => segment.type === "blank").map(segment => segment.blankId));
   assert.equal(segmentBlankIds.length, 280);
   assert.equal(new Set(segmentBlankIds).size, 280);
@@ -64,6 +65,28 @@ test("constitution migration keeps article resources, ordered blank relationship
   const preamble = articles.find(article => article.articleNumber === 0);
   assert.equal(preamble.id, "article:preamble");
   assert.ok(preamble.text.startsWith("日本国民は"));
+});
+
+test("constitution summary corrections match the school handout", () => {
+  const pack = byId.get("constitution-quest");
+  const summaries = new Map(pack.exercises.filter(exercise => exercise.id.startsWith("summary-cloze:")).map(exercise => [exercise.source.legacyId, exercise]));
+  const cases = [
+    ["summary-b5", "恒久平和主義", "平和主義", "三大基本原理の一つ", ""],
+    ["summary-b6", "地方自治", "基本的人権", "", "の保障等についても規定"],
+    ["summary-b7", "民主主義", "国民主権", "徹底した", "の原理を打ち出した。"]
+  ];
+  assert.equal(summaries.size, 8);
+  for (const [legacyId, answer, rejected, before, after] of cases) {
+    const exercise = summaries.get(legacyId);
+    assert.ok(exercise, `${legacyId} is missing`);
+    assert.equal(exercise.payload.answer, answer);
+    assert.deepEqual(exercise.payload.acceptedAnswers, [answer]);
+    assert.equal(exercise.payload.before, before);
+    assert.equal(exercise.payload.after, after);
+    assert.equal(gradeExercise(exercise, rejected).correct, false);
+    assert.equal(gradeExercise(exercise, answer).correct, true);
+    assert.equal(exercise.source.tags.includes(rejected), false);
+  }
 });
 
 test("every resource reference resolves and original IDs remain auditable", () => {

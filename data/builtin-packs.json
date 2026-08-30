@@ -23926,10 +23926,10 @@
           "importance": "B",
           "payload": {
             "before": "三大基本原理の一つ",
-            "answer": "平和主義",
+            "answer": "恒久平和主義",
             "after": "",
             "acceptedAnswers": [
-              "平和主義"
+              "恒久平和主義"
             ],
             "explanation": "日本国憲法の概要"
           },
@@ -23952,10 +23952,10 @@
           "importance": "B",
           "payload": {
             "before": "",
-            "answer": "基本的人権",
+            "answer": "地方自治",
             "after": "の保障等についても規定",
             "acceptedAnswers": [
-              "基本的人権"
+              "地方自治"
             ],
             "explanation": "日本国憲法の概要"
           },
@@ -23968,7 +23968,7 @@
             "reviewed": true,
             "tags": [
               "概要",
-              "基本的人権"
+              "地方自治"
             ]
           }
         },
@@ -23978,10 +23978,10 @@
           "importance": "B",
           "payload": {
             "before": "徹底した",
-            "answer": "国民主権",
+            "answer": "民主主義",
             "after": "の原理を打ち出した。",
             "acceptedAnswers": [
-              "国民主権"
+              "民主主義"
             ],
             "explanation": "日本国憲法の概要"
           },
@@ -23994,7 +23994,7 @@
             "reviewed": true,
             "tags": [
               "概要",
-              "国民主権"
+              "民主主義"
             ]
           }
         },
@@ -26370,7 +26370,7 @@
         }
       ],
       "metadata": {
-        "contentVersion": "1",
+        "contentVersion": "2",
         "migratedFrom": "legacy-study-pwa",
         "legacyCounts": {
           "articles": 104,

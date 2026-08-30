@@ -136,7 +136,7 @@ async function migrateConstitution() {
   });
   return { pack: makePack({
     id: "constitution-quest", title: "日本国憲法クエスト", subject: { id: "politics", name: "政治" }, resources: [...articleResources, ...chapterResources, ...stageResources], exercises: [...blanks.map(cloze), ...summaries.map(summary), ...articles.map(recall)],
-    metadata: { legacyCounts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: summaries.length, derivedFullRecall: articles.length }, sourceFiles: ["政経/constitution-quest/data/articles.json", "政経/constitution-quest/data/blanks.json", "政経/constitution-quest/data/chapters.json", "政経/constitution-quest/data/stages.json", "政経/constitution-quest/data/summary_questions.json"] }
+    metadata: { contentVersion: "2", legacyCounts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: summaries.length, derivedFullRecall: articles.length }, sourceFiles: ["政経/constitution-quest/data/articles.json", "政経/constitution-quest/data/blanks.json", "政経/constitution-quest/data/chapters.json", "政経/constitution-quest/data/stages.json", "政経/constitution-quest/data/summary_questions.json"] }
   }), counts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: summaries.length, fullRecall: articles.length }, raw: { articles, blanks, chapters, stages, summaries } };
 }
 
