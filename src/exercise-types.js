@@ -110,4 +110,3 @@ export const EXERCISE_TYPES = Object.freeze({
 export function getExerciseTypeDefinition(type) {
   return EXERCISE_TYPES[type] || null;
 }
-

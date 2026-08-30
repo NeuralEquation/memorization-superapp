@@ -15,16 +15,16 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.4.0";
-import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.4.0";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.4.0";
+} from "./core.js?v=1.5.0";
+import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.5.0";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.5.0";
 import {
   CONSTITUTION_MOCK_DURATION_MS,
   buildConstitutionMockModel,
   gradeConstitutionMock,
   isConstitutionMockTimedOut,
   selectConstitutionMockExercises
-} from "./constitution-mock.js?v=1.4.0";
+} from "./constitution-mock.js?v=1.5.0";
 import {
   createBackup,
   deletePackCompletely,
@@ -35,7 +35,7 @@ import {
   recordAttempt,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.4.0";
+} from "./storage.js?v=1.5.0";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -53,7 +53,9 @@ let pendingDeleteId = null;
 let pendingBackup = null;
 let toastTimer = null;
 let libraryVisibleExerciseIds = [];
+let libraryFilteredEntries = [];
 let librarySearchComposing = false;
+const openLibraryEntryIds = new Set();
 const libraryState = { packId: "", sectionId: "", query: "", importance: "all", status: "all", group: "all", favorite: "all", limit: 60 };
 
 function showToast(message) {
@@ -99,7 +101,7 @@ async function toggleFavorite(packId, itemId) {
   favorites[packId] = [...next];
   snapshot.meta = { ...snapshot.meta, favorites };
   await putMeta(db, snapshot.meta);
-  renderLibrary();
+  renderLibrary(false, true);
   showToast(next.has(itemId) ? "お気に入りに追加しました" : "お気に入りから外しました");
 }
 
@@ -246,10 +248,14 @@ function renderClozePassage(entry) {
   return `<div class="cloze-instructions">空欄をタップすると、その場で答えが開きます。</div><p class="cloze-passage-text">${passage || renderRichText(resource.text)}</p>`;
 }
 
+function libraryDetailsAttributes(entry) {
+  return `data-library-entry-id="${escapeHtml(entry.id)}"${openLibraryEntryIds.has(entry.id) ? " open" : ""}`;
+}
+
 function libraryEntryCard(entry, pack) {
   const item = entry.item;
   if (entry.kind === "resource" && item.kind === "concept") {
-    return `<details class="library-card flash-card">
+    return `<details class="library-card flash-card" ${libraryDetailsAttributes(entry)}>
       <summary>${entryMeta(entry, pack)}<button type="button" class="favorite-star ${isFavorite(pack.id, item.id) ? "is-favorite" : ""}" data-action="toggle-favorite" data-pack-id="${escapeHtml(pack.id)}" data-item-id="${escapeHtml(item.id)}" aria-pressed="${isFavorite(pack.id, item.id)}" aria-label="${isFavorite(pack.id, item.id) ? "お気に入りから外す" : "お気に入りに追加"}">${isFavorite(pack.id, item.id) ? "★" : "☆"}</button><h3>${escapeHtml(item.title)}</h3><p>${renderRichText(item.text)}</p><span class="reveal-note">開いて関連語・混同ポイントを確認</span></summary>
       <div class="library-card-body">
         ${item.pair ? `<div class="detail-line"><span>関連</span><strong>${escapeHtml(item.pair)}</strong></div>` : ""}
@@ -259,24 +265,29 @@ function libraryEntryCard(entry, pack) {
   }
   if (entry.kind === "resource" && item.kind === "constitution-article") {
     const articleLabel = item.articleNumber ? `第${item.articleNumber}条` : "前文";
-    return `<details class="library-card article-card">
+    return `<details class="library-card article-card" ${libraryDetailsAttributes(entry)}>
       <summary>${entryMeta(entry, pack)}<span class="article-number">${articleLabel}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(String(item.text || "").slice(0, 90))}${String(item.text || "").length > 90 ? "…" : ""}</p><span class="reveal-note">条文全文を表示</span></summary>
       <div class="library-card-body article-text">${renderRichText(item.text)}</div>
     </details>`;
   }
   if (entry.kind === "cloze-group") {
     const articleLabel = item.articleNumber ? `第${item.articleNumber}条` : "前文";
-    return `<details class="library-card cloze-article-card">
+    return `<details class="library-card cloze-article-card" ${libraryDetailsAttributes(entry)}>
       <summary>${entryMeta(entry, pack)}<span class="article-number">${articleLabel}</span><h3>${escapeHtml(item.title)}</h3><p>${entry.exerciseIds.length}か所を、1つの文章で確認します。</p><span class="reveal-note">文章を開く</span></summary>
-      <div class="library-card-body">${renderClozePassage(entry)}</div>
+      <div class="library-card-body">${renderClozePassage(entry)}
+        <div class="cloze-card-actions">
+          <button class="primary" data-action="start-library-entry" data-entry-id="${escapeHtml(entry.id)}">この条文を学習</button>
+          <button class="secondary" data-action="start-library-from" data-entry-id="${escapeHtml(entry.id)}">ここから学習</button>
+        </div>
+      </div>
     </details>`;
   }
   if (entry.kind === "resource") {
-    return `<details class="library-card"><summary>${entryMeta(entry, pack)}<h3>${escapeHtml(item.title || item.id)}</h3><p>${renderRichText(item.text || "")}</p><span class="reveal-note">詳しく表示</span></summary><div class="library-card-body">${renderRichText(item.text || "")}</div></details>`;
+    return `<details class="library-card" ${libraryDetailsAttributes(entry)}><summary>${entryMeta(entry, pack)}<h3>${escapeHtml(item.title || item.id)}</h3><p>${renderRichText(item.text || "")}</p><span class="reveal-note">詳しく表示</span></summary><div class="library-card-body">${renderRichText(item.text || "")}</div></details>`;
   }
   const handler = getHandler(item.type);
   const title = item.metadata?.topic || item.payload.heading || handler?.label || item.type;
-  return `<details class="library-card question-list-card">
+  return `<details class="library-card question-list-card" ${libraryDetailsAttributes(entry)}>
     <summary>${entryMeta(entry, pack)}<h3>${escapeHtml(title)}</h3><p>${renderRichText(exercisePrompt(item))}</p><span class="reveal-note">答えと解説を表示</span></summary>
     <div class="library-card-body">${exerciseDetail(item)}</div>
   </details>`;
@@ -306,7 +317,8 @@ function ensureLibraryState(packId = libraryState.packId) {
   return { pack, sections, section };
 }
 
-function renderLibrary(restoreSearchFocus = false) {
+function renderLibrary(restoreSearchFocus = false, preserveScroll = false) {
+  const previousScrollY = preserveScroll ? window.scrollY : null;
   const active = snapshot.packs.filter(pack => pack.status === "active");
   const { pack, sections, section } = ensureLibraryState();
   if (!pack || !section) {
@@ -316,7 +328,9 @@ function renderLibrary(restoreSearchFocus = false) {
   const groups = sectionGroups(section);
   if (libraryState.group !== "all" && !groups.includes(libraryState.group)) libraryState.group = "all";
   const filtered = filterLibraryEntries(section, { ...libraryState, favoriteIds: favoriteIdsFor(pack.id) }, pack.id, progressMap);
-  const visible = filtered.slice(0, libraryState.limit);
+  const showAll = pack.id === "constitution-quest" && section.id === "cloze";
+  const visible = showAll ? filtered : filtered.slice(0, libraryState.limit);
+  libraryFilteredEntries = filtered;
   libraryVisibleExerciseIds = [...new Set(filtered.flatMap(entry => entry.exerciseIds))];
   const resultDescription = section.id === "cloze" ? `文・${formatNumber(libraryVisibleExerciseIds.length)}穴` : `${section.resultUnit || "件"}（${section.label}）`;
   const content = `<main id="main-content" class="page library-page">
@@ -331,15 +345,18 @@ function renderLibrary(restoreSearchFocus = false) {
       <label class="library-group-filter"><span>範囲</span><select data-library-filter="group">${selectOptions(groups, libraryState.group, "すべて")}</select></label>
       <button class="ghost reset-filter" data-action="reset-library">条件をリセット</button>
     </section>
-    <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>${escapeHtml(resultDescription)}</span></div><button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div>
+    <div class="library-result-head"><div><strong>${formatNumber(filtered.length)}</strong><span>${escapeHtml(resultDescription)}</span></div><div class="library-result-actions">${showAll ? `<button class="ghost" data-action="library-open-all">すべて開く</button><button class="ghost" data-action="library-close-all">すべて閉じる</button>` : ""}<button class="primary" data-action="start-library" ${libraryVisibleExerciseIds.length ? "" : "disabled"}>表示中から学習</button></div></div>
     <section class="library-grid" aria-label="${escapeHtml(section.label)}">${visible.length ? visible.map(entry => libraryEntryCard(entry, pack)).join("") : `<div class="empty-state"><h3>該当する項目がありません</h3><p>検索語や絞り込み条件を変えてください。</p><button class="ghost" data-action="reset-library">条件をリセット</button></div>`}</section>
-    ${visible.length < filtered.length ? `<div class="load-more"><button class="ghost" data-action="library-more">さらに表示（残り${formatNumber(filtered.length - visible.length)}件）</button></div>` : ""}
+    ${!showAll && visible.length < filtered.length ? `<div class="load-more"><button class="ghost" data-action="library-more">さらに表示（残り${formatNumber(filtered.length - visible.length)}件）</button></div>` : ""}
   </main>`;
   app.innerHTML = appShell(content, "library");
-  if (restoreSearchFocus) requestAnimationFrame(() => {
+  if (restoreSearchFocus || preserveScroll) requestAnimationFrame(() => {
+    if (previousScrollY !== null) window.scrollTo(0, previousScrollY);
     const input = document.querySelector("[data-library-search]");
-    input?.focus();
-    input?.setSelectionRange(input.value.length, input.value.length);
+    if (restoreSearchFocus) {
+      input?.focus();
+      input?.setSelectionRange(input.value.length, input.value.length);
+    }
   });
 }
 
@@ -403,6 +420,18 @@ function startLibrarySession(packId, exerciseIds = libraryVisibleExerciseIds) {
   }
   const queue = selectPackReviewQueue({ ...pack, exercises: pool }, progressMap, { limit: Math.min(20, pool.length), mode: "recommended" });
   beginSession(packId, "library", queue, pool.map(exercise => exercise.id));
+}
+
+function startOrderedLibrarySession(packId, exerciseIds) {
+  const pack = packById(packId);
+  if (!pack || pack.status !== "active") return;
+  const exercises = new Map(pack.exercises.map(exercise => [exercise.id, exercise]));
+  const orderedPool = [...new Set(exerciseIds)].map(id => exercises.get(id)).filter(Boolean);
+  if (!orderedPool.length) {
+    showToast("この範囲には出題できる問題がありません");
+    return;
+  }
+  beginSession(packId, "library", orderedPool.slice(0, 20), orderedPool.map(exercise => exercise.id));
 }
 
 const MOCK_STORAGE_KEY = "memory-foundry-constitution-mock";
@@ -1048,6 +1077,7 @@ async function handleClick(event) {
   try {
     if (action === "navigate") navigate(button.dataset.view);
     else if (action === "open-library") {
+      openLibraryEntryIds.clear();
       libraryState.packId = button.dataset.packId;
       libraryState.sectionId = "";
       currentView = "library";
@@ -1055,6 +1085,7 @@ async function handleClick(event) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
     else if (action === "library-section") {
+      openLibraryEntryIds.clear();
       libraryState.sectionId = button.dataset.sectionId;
       libraryState.group = "all";
       libraryState.favorite = "all";
@@ -1063,7 +1094,15 @@ async function handleClick(event) {
     }
     else if (action === "library-more") {
       libraryState.limit += 60;
-      renderLibrary();
+      renderLibrary(false, true);
+    }
+    else if (action === "library-open-all" || action === "library-close-all") {
+      const shouldOpen = action === "library-open-all";
+      document.querySelectorAll("details.cloze-article-card[data-library-entry-id]").forEach(card => {
+        card.open = shouldOpen;
+        if (shouldOpen) openLibraryEntryIds.add(card.dataset.libraryEntryId);
+        else openLibraryEntryIds.delete(card.dataset.libraryEntryId);
+      });
     }
     else if (action === "reveal-library-blank") {
       const revealed = button.classList.toggle("revealed");
@@ -1080,6 +1119,14 @@ async function handleClick(event) {
       renderLibrary();
     }
     else if (action === "start-library") startLibrarySession(libraryState.packId);
+    else if (action === "start-library-entry") {
+      const entry = libraryFilteredEntries.find(item => item.id === button.dataset.entryId);
+      if (entry) startOrderedLibrarySession(libraryState.packId, entry.exerciseIds);
+    }
+    else if (action === "start-library-from") {
+      const startIndex = libraryFilteredEntries.findIndex(item => item.id === button.dataset.entryId);
+      if (startIndex >= 0) startOrderedLibrarySession(libraryState.packId, libraryFilteredEntries.slice(startIndex).flatMap(entry => entry.exerciseIds));
+    }
     else if (action === "start") startSession(button.dataset.packId, button.dataset.mode);
     else if (action === "start-constitution-mock") startConstitutionMock(button.dataset.packId);
     else if (action === "quit-study") navigate("home");
@@ -1140,6 +1187,7 @@ function handleLibraryChange(event) {
   if (!control) return;
   const key = control.dataset.libraryFilter;
   if (key === "packId") {
+    openLibraryEntryIds.clear();
     libraryState.packId = control.value;
     libraryState.sectionId = "";
   } else {
@@ -1147,6 +1195,13 @@ function handleLibraryChange(event) {
   }
   libraryState.limit = 60;
   renderLibrary();
+}
+
+function handleLibraryToggle(event) {
+  const card = event.target.closest?.("details[data-library-entry-id]");
+  if (!card) return;
+  if (card.open) openLibraryEntryIds.add(card.dataset.libraryEntryId);
+  else openLibraryEntryIds.delete(card.dataset.libraryEntryId);
 }
 
 function handleLibraryInput(event) {
@@ -1185,7 +1240,7 @@ function handleKeyboard(event) {
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.4.0", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.5.0", { scope: "./" });
     if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -1225,7 +1280,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.4.0", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.5.0", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");
@@ -1261,6 +1316,7 @@ app.addEventListener("input", handleLibraryInput);
 app.addEventListener("input", handleMockInput);
 app.addEventListener("compositionstart", handleLibraryCompositionStart);
 app.addEventListener("compositionend", handleLibraryCompositionEnd);
+app.addEventListener("toggle", handleLibraryToggle, true);
 modal.addEventListener("click", handleClick);
 document.addEventListener("keydown", handleKeyboard);
 modal.addEventListener("cancel", event => { event.preventDefault(); closeModal(); });

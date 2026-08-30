@@ -208,6 +208,8 @@ button.wide { width: 100%; }
 .library-result-head > div { display: flex; align-items: baseline; gap: 7px; }
 .library-result-head strong { font-size: 28px; letter-spacing: -.04em; }
 .library-result-head span { color: var(--muted); font-size: 13px; }
+.library-result-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.library-result-actions button { white-space: nowrap; }
 .library-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
 .library-card { min-width: 0; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.92); box-shadow: 0 7px 25px rgba(25,53,45,.035); overflow: hidden; }
 .library-card[open] { grid-column: span 2; border-color: #a7b8af; box-shadow: var(--shadow); }
@@ -242,6 +244,8 @@ button.wide { width: 100%; }
 .cloze-article-card[open] { grid-column: 1 / -1; }
 .cloze-instructions { margin: 16px 0 12px; padding: 11px 13px; border-radius: 12px; background: var(--surface-soft); color: var(--muted); font-size: 12px; font-weight: 750; }
 .cloze-passage-text { margin: 0 !important; font-size: 16px; line-height: 2.35; white-space: pre-line; }
+.cloze-card-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--line); }
+.cloze-card-actions button { min-height: 44px; white-space: nowrap; }
 .inline-cloze { display: inline-flex; align-items: center; justify-content: center; min-width: 3.4em; min-height: 2em; margin: 0 .18em; padding: .1em .55em; border: 1px solid #d7a07f; border-radius: 8px; background: var(--accent-soft); color: #9c431e; vertical-align: baseline; cursor: pointer; font-weight: 900; line-height: 1.35; white-space: nowrap; }
 .inline-cloze:hover { background: #ffe3d4; }
 .inline-cloze .blank-answer { display: none; }
@@ -350,7 +354,10 @@ button.wide { width: 100%; }
   .library-result-head { align-items: stretch; }
   .library-result-head > div { min-width: 0; }
   .library-result-head span { line-height: 1.35; }
-  .library-result-head .primary { flex: 0 0 auto; min-height: 46px; padding-inline: 13px; white-space: nowrap; }
+  .library-result-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: stretch; }
+  .library-result-actions .primary { grid-column: 1 / -1; }
+  .library-result-head .primary { min-height: 46px; padding-inline: 13px; white-space: nowrap; }
+  .cloze-card-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .mock-hud { align-items: flex-start; padding: 15px; }
   .mock-hud strong { font-size: 19px; }
   .mock-timer { min-width: 82px; padding: 9px 8px; font-size: 20px; }

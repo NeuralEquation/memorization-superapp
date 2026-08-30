@@ -157,4 +157,3 @@ schema の `type` を増やすだけでは動きません。次の実装を同�
 
 Restore は pack の正当性に加えて、progress の key と `packId`/`exerciseId` の一致、参照先 exercise の存在、履歴の ID・参照・type・時刻・正誤を検証します。検証に失敗した JSON は Restore できません。
 
-

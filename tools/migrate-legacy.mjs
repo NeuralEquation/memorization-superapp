@@ -233,4 +233,3 @@ const bundle = { schemaVersion: 1, type: "builtin-memory-packs", generatedAt: "2
 verifyBundle(bundle, results);
 await writeFile(outputPath, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
 console.log(JSON.stringify({ output: "data/builtin-packs.json", packs: 3, memorization: memorization.counts, inorganic: inorganic.counts, constitution: constitution.counts }, null, 2));
-

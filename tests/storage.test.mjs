@@ -102,4 +102,3 @@ test("complete pack deletion cascades to progress and history", async () => {
   assert.equal(db.stores.progress.size, 0);
   assert.equal(db.stores.history.size, 0);
 });
-

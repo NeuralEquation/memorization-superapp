@@ -1,7 +1,7 @@
-import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.4.0";
+import { EXERCISE_TYPES, getExerciseTypeDefinition } from "./exercise-types.js?v=1.5.0";
 
 export const SCHEMA_VERSION = 1;
-export const APP_VERSION = "1.4.0";
+export const APP_VERSION = "1.5.0";
 export const PACK_TYPE = "memory-pack";
 export const BACKUP_TYPE = "memory-foundry-backup";
 

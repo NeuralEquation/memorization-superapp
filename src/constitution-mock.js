@@ -1,4 +1,4 @@
-import { gradeExercise } from "./core.js?v=1.4.0";
+import { gradeExercise } from "./core.js?v=1.5.0";
 
 export const CONSTITUTION_MOCK_COUNT = 30;
 export const CONSTITUTION_MOCK_DURATION_MS = 15 * 60 * 1000;

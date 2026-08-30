@@ -1,4 +1,4 @@
-import { escapeHtml, gradeExercise, renderRichText } from "./core.js?v=1.4.0";
+import { escapeHtml, gradeExercise, renderRichText } from "./core.js?v=1.5.0";
 
 function explanation(payload) {
   return payload.explanation || payload.related || payload.caution || "";
