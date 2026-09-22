@@ -1,4 +1,4 @@
-import { APP_VERSION, BACKUP_TYPE, SCHEMA_VERSION, progressKey, validateBackup, validatePack } from "./core.js?v=1.6.1";
+import { APP_VERSION, BACKUP_TYPE, SCHEMA_VERSION, progressKey, validateBackup, validatePack } from "./core.js?v=1.6.2";
 
 const DB_NAME = "memory-foundry";
 const DB_VERSION = 1;
@@ -86,17 +86,32 @@ export async function addHistory(db, entry) {
 }
 
 export async function recordAttempt(db, progressRecord, historyEntry, meta = null) {
-  const expectedKey = progressKey(progressRecord.packId, progressRecord.exerciseId);
-  if (progressRecord.key !== expectedKey) throw new Error("progress identityが一致しません");
-  if (historyEntry.packId !== progressRecord.packId || historyEntry.exerciseId !== progressRecord.exerciseId) {
-    throw new Error("history identityがprogressと一致しません");
+  return recordAttempts(db, [{ progress: progressRecord, history: historyEntry }], meta);
+}
+
+export async function recordAttempts(db, attempts, meta = null) {
+  if (!Array.isArray(attempts) || !attempts.length) throw new Error("保存する回答がありません");
+  for (const { progress, history } of attempts) {
+    if (!progress || progress.key !== progressKey(progress.packId, progress.exerciseId)) throw new Error("progress identityが一致しません");
+    if (!history || history.packId !== progress.packId || history.exerciseId !== progress.exerciseId) {
+      throw new Error("history identityがprogressと一致しません");
+    }
   }
   const stores = meta ? [META, PROGRESS, HISTORY] : [PROGRESS, HISTORY];
   const transaction = db.transaction(stores, "readwrite");
-  transaction.objectStore(PROGRESS).put(progressRecord);
-  transaction.objectStore(HISTORY).put(historyEntry);
-  if (meta) transaction.objectStore(META).put(meta, "app");
-  await transactionDone(transaction);
+  const done = transactionDone(transaction);
+  try {
+    for (const { progress, history } of attempts) {
+      transaction.objectStore(PROGRESS).put(progress);
+      transaction.objectStore(HISTORY).put(history);
+    }
+    if (meta) transaction.objectStore(META).put(meta, "app");
+  } catch (error) {
+    transaction.abort();
+    await done.catch(() => {});
+    throw error;
+  }
+  await done;
 }
 
 export async function deletePackCompletely(db, packId) {

@@ -76,3 +76,17 @@ test("boss stars match the constitution source thresholds", () => {
   assert.equal(bossStars(.8, stage), 2);
   assert.equal(bossStars(.9, stage), 3);
 });
+
+test("overview stage includes all eight summaries, including older user-edited packs", () => {
+  for (const legacy of [false, true]) {
+    const pack = structuredClone(byId("constitution-quest"));
+    const summaries = pack.exercises.filter(exercise => exercise.id.startsWith("summary-cloze:"));
+    assert.equal(summaries.length, 8);
+    if (legacy) summaries.forEach(exercise => { delete exercise.metadata; });
+    const stage = getPackStages(pack).find(stage => stage.key === "overview");
+    assert.equal(stage.exerciseIds.length, 24);
+    assert.ok(summaries.every(exercise => stage.exerciseIds.includes(exercise.id)));
+    const queue = selectGameQueue(pack, new Map(), { mode: "boss", stageId: stage.id, random: () => 0 });
+    assert.ok(queue.some(exercise => exercise.id.startsWith("summary-cloze:")));
+  }
+});

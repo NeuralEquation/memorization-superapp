@@ -54,7 +54,7 @@ test("constitution migration keeps article resources, ordered blank relationship
   const summary = pack.exercises.filter(exercise => exercise.id.startsWith("summary-cloze:"));
   const recall = pack.exercises.filter(exercise => exercise.type === "full-recall");
   assert.deepEqual([articles.length, chapters.length, stages.length, cloze.length, summary.length, recall.length], [104, 13, 13, 280, 8, 104]);
-  assert.equal(pack.metadata.contentVersion, "2");
+  assert.equal(pack.metadata.contentVersion, "3");
   const segmentBlankIds = articles.flatMap(article => (article.segments || []).filter(segment => segment.type === "blank").map(segment => segment.blankId));
   assert.equal(segmentBlankIds.length, 280);
   assert.equal(new Set(segmentBlankIds).size, 280);
@@ -62,6 +62,7 @@ test("constitution migration keeps article resources, ordered blank relationship
   assert.ok(segmentBlankIds.every(id => clozeLegacyIds.has(id)));
   assert.ok(cloze.every(exercise => Array.isArray(exercise.payload.acceptedAnswers) && exercise.payload.acceptedAnswers.length));
   assert.ok(summary.every(exercise => exercise.source.sourceKind === "assignment-summary"));
+  assert.ok(summary.every(exercise => exercise.metadata.chapterId === "overview"));
   const preamble = articles.find(article => article.articleNumber === 0);
   assert.equal(preamble.id, "article:preamble");
   assert.ok(preamble.text.startsWith("日本国民は"));

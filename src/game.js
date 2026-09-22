@@ -1,4 +1,4 @@
-import { memoryFlags, progressKey, selectPackReviewQueue } from "./core.js?v=1.6.1";
+import { memoryFlags, progressKey, selectPackReviewQueue } from "./core.js?v=1.6.2";
 
 export const GAME_MODES = Object.freeze({
   daily: { label: "今日のクエスト", code: "DAILY", limit: 5, description: "期限・ミス・未学習を優先" },
@@ -168,7 +168,12 @@ export function getPackStages(pack) {
       clearRate: Number(stage.clearRate) || .8,
       star3Rate: Number(stage.star3Rate) || .9,
       bossQuestionCount: Number(stage.bossQuestionCount) || 20,
-      exerciseIds: stageExerciseIds(pack, (exercise, resource) => resource?.chapterId === stage.chapterId && exercise.type !== "full-recall")
+      exerciseIds: stageExerciseIds(pack, (exercise, resource) => {
+        // Older user-edited built-ins are intentionally not overwritten during sync.
+        const chapterId = resource?.chapterId || exercise.metadata?.chapterId
+          || (pack.id === "constitution-quest" && exercise.id.startsWith("summary-cloze:") ? "overview" : "");
+        return chapterId === stage.chapterId && exercise.type !== "full-recall";
+      })
     }));
   }
 

@@ -141,6 +141,7 @@ async function migrateConstitution() {
   });
   const summary = item => ({
     id: `summary-cloze:${item.id}`, type: "cloze", importance: item.difficulty >= 3 ? "A" : item.difficulty === 2 ? "B" : "C",
+    metadata: { chapterId: item.chapterId },
     payload: { before: item.before, answer: item.answer, after: item.after, acceptedAnswers: item.acceptedAnswers, explanation: item.heading },
     source: source("政経/constitution-quest/data/summary_questions.json", { legacyId: item.id, sourcePage: item.sourcePage, sourceKind: item.sourceKind, verificationSource: item.verificationSource, reviewed: item.reviewed, tags: item.tags })
   });
@@ -151,7 +152,7 @@ async function migrateConstitution() {
   });
   return { pack: makePack({
     id: "constitution-quest", title: "日本国憲法クエスト", subject: { id: "politics", name: "政治" }, resources: [...articleResources, ...chapterResources, ...stageResources], exercises: [...blanks.map(cloze), ...correctedSummaries.map(summary), ...articles.map(recall)],
-    metadata: { contentVersion: "2", legacyCounts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: correctedSummaries.length, derivedFullRecall: articles.length }, sourceFiles: ["政経/constitution-quest/data/articles.json", "政経/constitution-quest/data/blanks.json", "政経/constitution-quest/data/chapters.json", "政経/constitution-quest/data/stages.json", "政経/constitution-quest/data/summary_questions.json"] }
+    metadata: { contentVersion: "3", legacyCounts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: correctedSummaries.length, derivedFullRecall: articles.length }, sourceFiles: ["政経/constitution-quest/data/articles.json", "政経/constitution-quest/data/blanks.json", "政経/constitution-quest/data/chapters.json", "政経/constitution-quest/data/stages.json", "政経/constitution-quest/data/summary_questions.json"] }
   }), counts: { articles: articles.length, chapters: chapters.length, stages: stages.length, blanks: blanks.length, summaryCloze: correctedSummaries.length, fullRecall: articles.length }, raw: { articles, blanks, chapters, stages, summaries: correctedSummaries } };
 }
 
@@ -241,6 +242,19 @@ function verifyBundle(bundle, results) {
   verifyConstitution(results.constitution.raw, results.constitution.pack);
 }
 
+if (process.argv.includes("--constitution-only")) {
+  // Rebuild only this pack when unrelated legacy sources are unavailable.
+  const bundle = await readJson(outputPath);
+  assert(bundle.type === "builtin-memory-packs" && bundle.packs?.length === 3, "既存bundleが不正です");
+  const constitution = await migrateConstitution();
+  verifyConstitution(constitution.raw, constitution.pack);
+  assert(constitution.counts.blanks === 280 && constitution.counts.summaryCloze === 8, "憲法cloze数が不正です");
+  assert(bundle.packs.filter(pack => pack.id === constitution.pack.id).length === 1, "更新対象packが一意ではありません");
+  bundle.packs = bundle.packs.map(pack => pack.id === constitution.pack.id ? constitution.pack : pack);
+  bundle.packs.forEach(pack => assert(validatePack(pack).valid, `${pack.id} がschema不正です`));
+  await writeFile(outputPath, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
+  console.log(JSON.stringify({ output: "data/builtin-packs.json", updatedPack: constitution.pack.id, counts: constitution.counts }, null, 2));
+} else {
 const memorization = await migrateMemorization();
 const inorganic = await migrateInorganic();
 const constitution = await migrateConstitution();
@@ -249,3 +263,4 @@ const bundle = { schemaVersion: 1, type: "builtin-memory-packs", generatedAt: "2
 verifyBundle(bundle, results);
 await writeFile(outputPath, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
 console.log(JSON.stringify({ output: "data/builtin-packs.json", packs: 3, memorization: memorization.counts, inorganic: inorganic.counts, constitution: constitution.counts }, null, 2));
+}

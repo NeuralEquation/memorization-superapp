@@ -15,16 +15,16 @@ import {
   updateMemory,
   validateBackup,
   validatePack
-} from "./core.js?v=1.6.1";
-import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.6.1";
-import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.6.1";
+} from "./core.js?v=1.6.2";
+import { clozeContextParts, expectedAnswer, getHandler, renderFeedback } from "./exercise-registry.js?v=1.6.2";
+import { buildLibrarySections, entryStatus, filterLibraryEntries, sectionGroups } from "./library.js?v=1.6.2";
 import {
   CONSTITUTION_MOCK_DURATION_MS,
   buildConstitutionMockModel,
   gradeConstitutionMock,
   isConstitutionMockTimedOut,
   selectConstitutionMockExercises
-} from "./constitution-mock.js?v=1.6.1";
+} from "./constitution-mock.js?v=1.6.2";
 import {
   GAME_MODES,
   bossDamage,
@@ -40,7 +40,7 @@ import {
   selectGameQueue,
   stageMastery,
   unlockedBadges
-} from "./game.js?v=1.6.1";
+} from "./game.js?v=1.6.2";
 import {
   createBackup,
   deletePackCompletely,
@@ -49,9 +49,10 @@ import {
   putMeta,
   putPack,
   recordAttempt,
+  recordAttempts,
   replaceFromBackup,
   syncBuiltinPacks
-} from "./storage.js?v=1.6.1";
+} from "./storage.js?v=1.6.2";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -75,6 +76,93 @@ let librarySearchComposing = false;
 const openLibraryEntryIds = new Set();
 const libraryState = { packId: "", sectionId: "", query: "", importance: "all", status: "all", group: "all", favorite: "all", limit: 60 };
 const questState = { packId: "", stageId: "" };
+const STUDY_STORAGE_KEY = "memory-foundry-study-session-v1";
+
+function captureStudyDraft() {
+  if (currentView !== "study" || !session || session.completed || session.result) return;
+  if (session.mode === "article") {
+    document.querySelectorAll("#article-rebuild-form input").forEach(input => {
+      session.articleValues[input.name] = input.value;
+    });
+  } else if (session.mode !== "puzzle") {
+    const presentation = currentPresentation();
+    if (presentation) session.draftResponse = getHandler(presentation.type).readResponse(document);
+  }
+}
+
+function persistStudySession() {
+  if (!session || session.saving) return;
+  try {
+    if (session.completed) sessionStorage.removeItem(STUDY_STORAGE_KEY);
+    else sessionStorage.setItem(STUDY_STORAGE_KEY, JSON.stringify({
+      ...session,
+      questionElapsedMs: Math.max(0, (session.suspendedAt || Date.now()) - session.questionStartedAt)
+    }));
+  } catch { /* In-memory resume still works if browser storage is unavailable. */ }
+}
+
+function restoreStudySession() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(STUDY_STORAGE_KEY) || "null");
+    const pack = saved && packById(saved.packId);
+    if (!pack || pack.status !== "active" || saved.completed) return null;
+    if (saved.mode === "article") {
+      if (!Array.isArray(saved.articleExerciseIds) || !saved.articleExerciseIds.length
+        || !saved.articleExerciseIds.every(id => exerciseById(pack, id))
+        || !pack.resources.some(resource => resource.id === saved.article?.id)) return null;
+    } else {
+      if (!Array.isArray(saved.queue) || !Number.isInteger(saved.index) || saved.index < 0 || saved.index >= saved.queue.length
+        || !saved.queue.every(exercise => exercise && exerciseById(pack, exercise.id))) return null;
+    }
+    const now = Date.now();
+    return { ...saved, saving: false, suspendedAt: now, questionStartedAt: now - (Number(saved.questionElapsedMs) || 0) };
+  } catch { return null; }
+}
+
+function handleStudyInput() {
+  if (currentView !== "study" || session?.saving) return;
+  captureStudyDraft();
+  persistStudySession();
+}
+
+function resumeStudy() {
+  if (!session || session.completed || packById(session.packId)?.status !== "active") return;
+  if (session.suspendedAt) session.questionStartedAt += Date.now() - session.suspendedAt;
+  session.suspendedAt = null;
+  currentView = "study";
+  renderStudy();
+  startGameTimer();
+  window.scrollTo({ top: 0 });
+}
+
+function resumeMock() {
+  if (!mockSession || mockSession.completed || packById(mockSession.packId)?.status !== "active") return;
+  currentView = "mock";
+  renderMock();
+  startMockTimer();
+  window.scrollTo({ top: 0 });
+}
+
+function renderResumeActions() {
+  const studyPack = session && !session.completed && packById(session.packId);
+  const mockPack = mockSession && !mockSession.completed && packById(mockSession.packId);
+  if (studyPack?.status !== "active" && mockPack?.status !== "active") return "";
+  return `<section class="resume-panel" aria-label="中断した学習"><h2>続きから再開</h2>
+    ${studyPack?.status === "active" ? `<button class="secondary" data-action="resume-study">${escapeHtml(studyPack.title)} · ${escapeHtml(studyModeLabel(session.mode))}を再開</button>` : ""}
+    ${mockPack?.status === "active" ? `<button class="secondary" data-action="resume-mock">15分模試を再開</button>` : ""}
+    <p>このタブで再読み込みしても続きに戻れます。時間制限のある学習は中断中も時間が進みます。</p></section>`;
+}
+
+async function commitAttemptBatch(attempts, nextMeta) {
+  await recordAttempts(db, attempts, nextMeta);
+  for (const { progress, history } of attempts) {
+    const index = snapshot.progress.findIndex(record => record.key === progress.key);
+    if (index >= 0) snapshot.progress[index] = progress; else snapshot.progress.push(progress);
+    snapshot.history.unshift(history);
+    progressMap.set(progress.key, progress);
+  }
+  snapshot.meta = nextMeta;
+}
 
 function showToast(message) {
   toast.textContent = message;
@@ -115,6 +203,7 @@ function startGameTimer() {
   if (!session?.deadline || session.completed) return;
   gameTimer = setInterval(() => {
     if (!session?.deadline || session.completed) return clearGameTimer();
+    if (session.saving) return;
     session.secondsLeft = Math.max(0, Math.ceil((session.deadline - Date.now()) / 1000));
     const timer = document.querySelector("[data-game-timer]");
     if (timer) timer.textContent = session.mode === "blitz" ? `${session.secondsLeft}s` : `${String(Math.floor(session.secondsLeft / 60)).padStart(2, "0")}:${String(session.secondsLeft % 60).padStart(2, "0")}`;
@@ -281,17 +370,18 @@ function renderHome() {
   const player = levelFromXp(game.xp);
   const missions = missionProgress(snapshot.history);
   const content = `<main id="main-content" class="page">
+    ${renderResumeActions()}
+    <div class="section-head"><div><h1>教材を選ぶ</h1><p>学びたい教材から、すぐに始められます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="manage">管理</button></div>
+    <section class="pack-grid" aria-label="Active教材一覧">
+      ${packs.length ? packs.map(packCard).join("") : `<div class="empty-state"><h2>Active教材がありません</h2><p>Archiveから戻すか、教材JSONを追加してください。</p><button class="primary" data-action="navigate" data-view="manage">管理を開く</button></div>`}
+    </section>
     <section class="game-hero">
-      <div class="quest-hero"><p class="eyebrow">DAILY QUEST</p><h1>正解をつないで、<br>今日のエリアを進める。</h1><p>未学習・誤答・復習期限を優先しながらXPとコンボを獲得します。</p>${nextPack ? `<button class="primary" data-action="start-game" data-pack-id="${escapeHtml(nextPack.id)}" data-mode="daily">今日の5問に挑戦 <span>→</span></button>` : `<button class="primary" data-action="navigate" data-view="manage">教材を追加</button>`}<div class="hero-rewards"><span>✦ 正解でXP</span><span>⚡ 連続正解でコンボ</span><span>♜ ミスは後で再登場</span></div></div>
+      <div class="quest-hero"><p class="eyebrow">DAILY QUEST</p><h2>正解をつないで、<br>今日のエリアを進める。</h2><p>未学習・誤答・復習期限を優先しながらXPとコンボを獲得します。</p>${nextPack ? `<p class="daily-pack-name">${escapeHtml(nextPack.title)}</p><button class="primary" data-action="start-game" data-pack-id="${escapeHtml(nextPack.id)}" data-mode="daily" aria-label="${escapeHtml(nextPack.title)}の今日の5問に挑戦">今日の5問に挑戦 <span>→</span></button>` : `<button class="primary" data-action="navigate" data-view="manage">教材を追加</button>`}<div class="hero-rewards"><span>✦ 正解でXP</span><span>⚡ 連続正解でコンボ</span><span>♜ ミスは後で再登場</span></div></div>
       <aside class="player-card"><div class="player-avatar">F<span>Lv.${player.level}</span></div><p class="eyebrow">PLAYER RANK</p><h2>${rankName(player.level)}</h2><p>次のレベルまで ${player.required - player.current} XP</p><div class="xp-track"><i style="width:${player.progress}%"></i></div><small>${player.current} / ${player.required} XP</small></aside>
     </section>
     <section class="game-stats"><div><strong>${formatNumber(game.xp)}</strong><span>総XP</span></div><div><strong>${game.dailyStreak}</strong><span>連続学習日</span></div><div><strong>${game.bestCombo}</strong><span>最高コンボ</span></div><div><strong>${summary.mastered}</strong><span>習得済み</span></div></section>
     <div class="section-head"><div><h2>今日のミッション</h2><p>短い目標を積み上げて学習を続けます。</p></div></div><section class="mission-grid">${missions.missions.map((mission, index) => missionCard(mission, ["◈", "✓", "⚡"][index])).join("")}</section>
     ${nextPack ? `<div class="section-head"><div><h2>ゲームモード</h2><p>${escapeHtml(nextPack.title)}ですぐ遊べます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="quests">すべて見る →</button></div><section class="game-mode-grid home-modes">${gameModeCard("adventure", nextPack.id)}${gameModeCard("blitz", nextPack.id)}${gameModeCard("boss", nextPack.id, getPackStages(nextPack)[0]?.id || "")}</section>` : ""}
-    <div class="section-head"><div><h2>教材</h2><p>すぐ始めるか、一覧で内容を確認できます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="manage">管理</button></div>
-    <section class="pack-grid" aria-label="Active教材一覧">
-      ${packs.length ? packs.map(packCard).join("") : `<div class="empty-state"><h3>Active教材がありません</h3><p>Archiveから戻すか、教材JSONを追加してください。</p><button class="primary" data-action="navigate" data-view="manage">管理を開く</button></div>`}
-    </section>
   </main>`;
   app.innerHTML = appShell(content, "home");
 }
@@ -629,6 +719,7 @@ function restoreMockSession() {
 function startConstitutionMock(packId) {
   const pack = packById(packId);
   if (!pack || pack.id !== "constitution-quest" || pack.status !== "active") return;
+  if (mockSession && !mockSession.completed && mockSession.packId === packId) return resumeMock();
   clearMockTimer();
   clearMockStorage();
   const selected = selectConstitutionMockExercises(pack);
@@ -663,7 +754,7 @@ function mockExercise(pack, exerciseId) {
 function mockArticleSegment(segment, pack) {
   if (segment.type === "text") return renderRichText(segment.text);
   const current = mockSession.responses[segment.exerciseId] ?? "";
-  return `<input class="mock-blank-input" data-mock-input="${escapeHtml(segment.exerciseId)}" value="${escapeHtml(current)}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="空欄の回答">`;
+  return `<input class="mock-blank-input" data-mock-input="${escapeHtml(segment.exerciseId)}" value="${escapeHtml(current)}" ${isConstitutionMockTimedOut(mockSession) ? "readonly" : ""} autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="空欄の回答">`;
 }
 
 function renderMockResult(pack) {
@@ -706,7 +797,7 @@ function renderMock() {
   }).join("");
   app.innerHTML = appShell(`<main id="main-content" class="study-page mock-page"><div class="study-wrap">
     <div class="mock-hud"><div><p class="eyebrow">CONSTITUTION QUEST</p><strong>15分模試</strong><span>30か所・記述式</span></div><div class="mock-timer" data-mock-timer aria-live="polite">${formatMockTime(remaining)}</div></div>
-    <p class="mock-note">条文見出しは省略しています。文中の空欄だけに入力してください。</p>${groups}
+    <p class="mock-note">条文見出しは省略しています。文中の空欄だけに入力してください。中断しても回答は残りますが、制限時間は進みます。</p>${mockSession.saveFailed ? `<p role="alert" class="validation-box">結果を保存できませんでした。回答は保持しています。「提出する」で再試行してください。</p>` : ""}${groups}
     <div class="mock-submit-row"><button class="primary" data-action="submit-constitution-mock">提出する</button><button class="ghost" data-action="quit-mock">中断</button></div>
   </div></main>`, "study");
 }
@@ -718,7 +809,8 @@ function startMockTimer() {
     if (!mockSession || mockSession.completed) return clearMockTimer();
     const remaining = Math.max(0, mockSession.endsAt - Date.now());
     document.querySelector("[data-mock-timer]")?.replaceChildren(document.createTextNode(formatMockTime(remaining)));
-    if (isConstitutionMockTimedOut(mockSession)) submitConstitutionMock(true);
+    if (remaining <= 0) document.querySelectorAll("[data-mock-input]").forEach(input => { input.readOnly = true; });
+    if (isConstitutionMockTimedOut(mockSession) && !mockSession.saveFailed) submitConstitutionMock(true);
   };
   tick();
   mockTimer = setInterval(tick, 1000);
@@ -728,6 +820,7 @@ async function submitConstitutionMock(timedOut = false) {
   if (!mockSession || mockSession.completed || mockSession.submitting) return;
   const activeMock = mockSession;
   activeMock.submitting = true;
+  activeMock.saveFailed = false;
   clearMockTimer();
   const pack = packById(activeMock.packId);
   const result = gradeConstitutionMock(pack, activeMock.selectedExerciseIds, activeMock.responses);
@@ -735,6 +828,7 @@ async function submitConstitutionMock(timedOut = false) {
   let nextGame = gameState();
   let combo = 0;
   let xpEarned = 0;
+  const attempts = [];
   try {
     for (let index = 0; index < result.items.length; index += 1) {
       const item = result.items[index];
@@ -757,23 +851,20 @@ async function submitConstitutionMock(timedOut = false) {
         interactionType: "cloze", originalType: "cloze", correct: item.correct,
         rating: item.correct ? "good" : "again", usedHint: false, sessionMode: "mock", attemptedAt: now + index, xp, combo
       };
-      const nextMeta = index === result.items.length - 1 ? { ...snapshot.meta, game: nextGame } : null;
-      await recordAttempt(db, progress, history, nextMeta);
-      const existingIndex = snapshot.progress.findIndex(record => record.key === progress.key);
-      if (existingIndex >= 0) snapshot.progress[existingIndex] = progress; else snapshot.progress.push(progress);
-      snapshot.history.unshift(history);
-      progressMap.set(progress.key, progress);
+      attempts.push({ progress, history });
     }
-    snapshot.meta = { ...snapshot.meta, game: nextGame };
+    await commitAttemptBatch(attempts, { ...snapshot.meta, game: nextGame });
   } catch (error) {
     activeMock.submitting = false;
+    activeMock.saveFailed = true;
     showToast(`模試結果を保存できませんでした: ${error.message}`);
+    renderMock();
     startMockTimer();
     return;
   }
   activeMock.submitting = false;
   activeMock.completed = true;
-  activeMock.timedOut = timedOut;
+  activeMock.timedOut = timedOut || isConstitutionMockTimedOut(activeMock);
   activeMock.submittedAt = now;
   activeMock.result = result;
   activeMock.xpEarned = xpEarned;
@@ -784,7 +875,7 @@ async function submitConstitutionMock(timedOut = false) {
 
 function handleMockInput(event) {
   const input = event.target.closest("[data-mock-input]");
-  if (!input || !mockSession || mockSession.completed) return;
+  if (!input || !mockSession || mockSession.completed || mockSession.submitting || isConstitutionMockTimedOut(mockSession)) return;
   mockSession.responses[input.dataset.mockInput] = input.value;
   persistMockSession();
 }
@@ -932,6 +1023,7 @@ function renderArticleRebuild(pack) {
       <footer class="question-footer"><button class="ghost" data-action="new-article-rebuild" data-pack-id="${escapeHtml(pack.id)}">別の条文</button><button class="primary" type="submit" form="article-rebuild-form">一括判定</button></footer>
     </article></div></main>`;
   app.innerHTML = appShell(content, "study");
+  persistStudySession();
 }
 
 async function submitArticleRebuild(form) {
@@ -949,6 +1041,7 @@ async function submitArticleRebuild(form) {
   const allCorrect = outcomes.every(item => item.grade.correct);
   let nextGame = gameState();
   let combo = session.combo;
+  const attempts = [];
   try {
     for (let index = 0; index < outcomes.length; index += 1) {
       const item = outcomes[index];
@@ -966,14 +1059,9 @@ async function submitArticleRebuild(form) {
         usedHint: false, responseMs: now - session.questionStartedAt, sessionMode: "article", attemptedAt: now + index,
         xp, combo
       };
-      const nextMeta = index === outcomes.length - 1 ? { ...snapshot.meta, game: nextGame } : null;
-      await recordAttempt(db, progress, history, nextMeta);
-      const existingIndex = snapshot.progress.findIndex(record => record.key === progress.key);
-      if (existingIndex >= 0) snapshot.progress[existingIndex] = progress; else snapshot.progress.push(progress);
-      snapshot.history.unshift(history);
-      progressMap.set(progress.key, progress);
+      attempts.push({ progress, history });
     }
-    snapshot.meta = { ...snapshot.meta, game: nextGame };
+    await commitAttemptBatch(attempts, { ...snapshot.meta, game: nextGame });
     session.articleResult = Object.fromEntries(outcomes.map(item => [item.exerciseId, item.grade.correct]));
     session.correct = outcomes.filter(item => item.grade.correct).length;
     session.wrong = outcomes.length - session.correct;
@@ -1018,6 +1106,7 @@ function renderStudy() {
   if (session.completed || session.index >= session.queue.length) {
     clearGameTimer();
     session.completed = true;
+    persistStudySession();
     app.innerHTML = renderStudyResult(pack);
     return;
   }
@@ -1030,7 +1119,8 @@ function renderStudy() {
   }
   const progress = Math.round(session.index / session.queue.length * 100);
   const resourceTitle = pack.resources?.find(resource => resource.id === base.resourceId)?.title;
-  const meta = resourceTitle || base.metadata?.unit || base.group || base.source?.sourceKind || pack.subject.name;
+  const hidesAnswer = ["text-input", "cloze"].includes(base.type);
+  const meta = (hidesAnswer ? null : resourceTitle) || base.metadata?.unit || base.group || pack.subject.name;
   const answerContent = session.result
     ? `${renderFeedback(presentation, session.result)}${renderRatingButtons(presentation)}`
     : `${session.hint ? `<div class="hint-box">${escapeHtml(session.hint)}</div>` : ""}${session.mode === "puzzle" ? renderPuzzleAnswer(presentation) : handler.renderAnswer(presentation)}`;
@@ -1044,6 +1134,7 @@ function renderStudy() {
   const content = `<main id="main-content" class="study-page"><div class="study-wrap">
     <div class="study-hud"><button class="ghost" data-action="${session.mode === "endless" ? "finish-game" : "quit-study"}">${session.mode === "endless" ? "終了" : "中断"}</button><div class="progress-track" aria-label="進捗${progress}%"><span style="width:${progress}%"></span></div><span class="study-count">${session.index + 1} / ${session.mode === "endless" ? "∞" : session.queue.length}</span></div>
     ${gameHud}
+    ${session.deadline ? `<p class="mock-note">中断しても回答は残りますが、制限時間は進みます。</p>` : ""}
     <article class="question-card">
       <div class="question-meta"><span class="type-chip">${escapeHtml(handler.label)}</span><span class="subject-chip">${escapeHtml(meta)}</span><span class="status-chip">${escapeHtml(studyModeLabel(session.mode))}</span></div>
       <div class="question-main"><h1>${handler.renderPrompt(presentation)}</h1></div>
@@ -1052,6 +1143,16 @@ function renderStudy() {
     </article>
   </div></main>`;
   app.innerHTML = appShell(content, "study");
+  if (!session.result && session.draftResponse != null) {
+    const inputs = document.querySelectorAll("input[name=answer]");
+    inputs.forEach(input => {
+      if (input.type === "radio" || input.type === "checkbox") {
+        input.checked = Array.isArray(session.draftResponse)
+          ? session.draftResponse.includes(input.value) : String(session.draftResponse) === input.value;
+      } else input.value = session.draftResponse;
+    });
+  }
+  persistStudySession();
   requestAnimationFrame(() => document.querySelector("#answer-input, input[name=answer]")?.focus());
 }
 
@@ -1118,12 +1219,16 @@ function render() {
 }
 
 function navigate(view) {
+  if (session?.saving || mockSession?.submitting) return showToast("保存が終わるまでお待ちください");
+  if (currentView === "study" && session && !session.completed) {
+    captureStudyDraft();
+    session.suspendedAt = Date.now();
+    persistStudySession();
+  }
   clearGameTimer();
-  if (view !== "study") session = null;
   if (view !== "mock") {
     clearMockTimer();
-    if (currentView === "mock") clearMockStorage();
-    mockSession = null;
+    if (currentView === "mock") persistMockSession();
   }
   currentView = view;
   render();
@@ -1131,6 +1236,7 @@ function navigate(view) {
 }
 
 function showHint() {
+  captureStudyDraft();
   const exercise = currentPresentation();
   const answer = firstAcceptedAnswer(exercise) || firstAcceptedAnswer(currentBaseExercise());
   if (!answer) return;
@@ -1266,6 +1372,7 @@ async function rateAnswer(rating) {
   activeSession.index += 1;
   activeSession.result = null;
   activeSession.response = null;
+  activeSession.draftResponse = null;
   activeSession.presentation = null;
   activeSession.presentationKey = null;
   activeSession.usedHint = false;
@@ -1377,6 +1484,9 @@ function showBackupPreview(backup, parseError = null) {
 async function confirmBackupRestore() {
   if (!pendingBackup) return;
   await replaceFromBackup(db, pendingBackup);
+  clearGameTimer(); clearMockTimer(); clearMockStorage();
+  session = null; mockSession = null;
+  try { sessionStorage.removeItem(STUDY_STORAGE_KEY); } catch { /* storage can be unavailable */ }
   snapshot = await loadAll(db); refreshMaps(); closeModal(); currentView = "home"; render(); showToast("BackupをRestoreしました");
 }
 
@@ -1410,9 +1520,12 @@ async function setPackStatus(packId, status) {
 async function handleClick(event) {
   const button = event.target.closest("[data-action]");
   if (!button) return;
+  if (session?.saving || mockSession?.submitting) return showToast("保存が終わるまでお待ちください");
   const action = button.dataset.action;
   try {
     if (action === "navigate") navigate(button.dataset.view);
+    else if (action === "resume-study") resumeStudy();
+    else if (action === "resume-mock") resumeMock();
     else if (action === "start-game") startGameSession(button.dataset.packId, button.dataset.mode, button.dataset.stageId || "");
     else if (action === "start-article-rebuild" || action === "new-article-rebuild") startArticleRebuild(button.dataset.packId);
     else if (action === "open-library") {
@@ -1587,6 +1700,7 @@ function handleLibraryCompositionEnd(event) {
 
 function handleKeyboard(event) {
   if (currentView !== "study" || !session || session.result || modal.open) return;
+  if (session.mode === "article" || session.saving || session.completed) return;
   const presentation = currentPresentation();
   if (/^[1-9]$/.test(event.key) && ["single-choice", "multiple-choice", "true-false"].includes(presentation.type)) {
     const inputs = [...document.querySelectorAll("input[name=answer]")];
@@ -1594,14 +1708,15 @@ function handleKeyboard(event) {
     if (input) { input.checked = presentation.type === "multiple-choice" ? !input.checked : true; event.preventDefault(); }
   }
   if (event.key === "Enter" && !event.isComposing && !["self-grade", "full-recall"].includes(presentation.type)) {
-    event.preventDefault(); submitAnswer();
+    event.preventDefault();
+    if (session.mode === "puzzle") submitPuzzle(); else submitAnswer();
   }
 }
 
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register("./sw.js?v=1.6.1", { scope: "./" });
+    const registration = await navigator.serviceWorker.register("./sw.js?v=1.6.2", { scope: "./" });
     if (registration.waiting) showToast("更新があります。アプリを開き直してください");
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -1641,7 +1756,7 @@ async function init() {
     snapshot = await loadAll(db);
     let bundle = null;
     try {
-      const response = await fetch("./data/builtin-packs.json?v=1.6.1", { cache: "no-store" });
+      const response = await fetch("./data/builtin-packs.json?v=1.6.2", { cache: "no-store" });
       if (!response.ok) throw new Error(`教材データ HTTP ${response.status}`);
       bundle = await readBuiltinBundle(response);
       if (bundle.schemaVersion !== SCHEMA_VERSION || !Array.isArray(bundle.packs)) throw new Error("組み込み教材bundleが不正です");
@@ -1655,14 +1770,13 @@ async function init() {
       snapshot.meta = synced.meta;
     }
     refreshMaps();
+    session = restoreStudySession();
     const restoredMock = restoreMockSession();
     const restoredPack = restoredMock ? packById(restoredMock.packId) : null;
     if (restoredMock && restoredPack?.status === "active") {
       mockSession = restoredMock;
-      currentView = "mock";
     }
     render();
-    if (mockSession) startMockTimer();
     registerServiceWorker();
   } catch (error) {
     console.error(error);
@@ -1677,6 +1791,9 @@ app.addEventListener("change", handleQuestChange);
 app.addEventListener("submit", handleSubmit);
 app.addEventListener("input", handleLibraryInput);
 app.addEventListener("input", handleMockInput);
+app.addEventListener("input", handleStudyInput);
+app.addEventListener("change", handleStudyInput);
+window.addEventListener("pagehide", () => { captureStudyDraft(); persistStudySession(); persistMockSession(); });
 app.addEventListener("compositionstart", handleLibraryCompositionStart);
 app.addEventListener("compositionend", handleLibraryCompositionEnd);
 app.addEventListener("toggle", handleLibraryToggle, true);

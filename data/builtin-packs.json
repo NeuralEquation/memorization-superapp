@@ -23820,6 +23820,9 @@
           "id": "summary-cloze:summary-b1",
           "type": "cloze",
           "importance": "C",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "1946（昭和21）年11月3日に",
             "answer": "公布",
@@ -23846,6 +23849,9 @@
           "id": "summary-cloze:summary-b2",
           "type": "cloze",
           "importance": "C",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "1947（昭和22）年5月3日から",
             "answer": "施行",
@@ -23872,6 +23878,9 @@
           "id": "summary-cloze:summary-b3",
           "type": "cloze",
           "importance": "B",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "三大基本原理の一つ",
             "answer": "国民主権",
@@ -23898,6 +23907,9 @@
           "id": "summary-cloze:summary-b4",
           "type": "cloze",
           "importance": "B",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "三大基本原理の一つ",
             "answer": "基本的人権の尊重",
@@ -23924,6 +23936,9 @@
           "id": "summary-cloze:summary-b5",
           "type": "cloze",
           "importance": "B",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "三大基本原理の一つ",
             "answer": "恒久平和主義",
@@ -23950,6 +23965,9 @@
           "id": "summary-cloze:summary-b6",
           "type": "cloze",
           "importance": "B",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "",
             "answer": "地方自治",
@@ -23976,6 +23994,9 @@
           "id": "summary-cloze:summary-b7",
           "type": "cloze",
           "importance": "B",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "徹底した",
             "answer": "民主主義",
@@ -24002,6 +24023,9 @@
           "id": "summary-cloze:summary-b8",
           "type": "cloze",
           "importance": "B",
+          "metadata": {
+            "chapterId": "overview"
+          },
           "payload": {
             "before": "厳格な改正手続きを必要とする",
             "answer": "硬性憲法",
@@ -26370,7 +26394,7 @@
         }
       ],
       "metadata": {
-        "contentVersion": "2",
+        "contentVersion": "3",
         "migratedFrom": "legacy-study-pwa",
         "legacyCounts": {
           "articles": 104,
