@@ -6,6 +6,7 @@ import {
   deletePackCompletely,
   loadAll,
   recordAttempt,
+  recordAttempts,
   replaceFromBackup
 } from "../src/storage.js";
 import { emptyProgress } from "../src/core.js";
@@ -50,7 +51,7 @@ function cursorRequest(keys) {
   return output;
 }
 
-function memoryDb() {
+function memoryDb({ failPut = 0, abortAtCommit = false } = {}) {
   const stores = Object.fromEntries(["meta", "packs", "progress", "history"].map(name => [name, new Map()]));
   const transactions = [];
   return {
@@ -58,9 +59,29 @@ function memoryDb() {
     transactions,
     transaction(names, mode) {
       const selected = Array.isArray(names) ? names : [names];
-      const tx = { oncomplete: null, onerror: null, onabort: null, error: null, objectStore: name => new MemoryStore(name, stores[name]) };
+      const staged = Object.fromEntries(selected.map(name => [name, new Map(stores[name])]));
+      let aborted = false;
+      let writes = 0;
+      const tx = {
+        oncomplete: null, onerror: null, onabort: null, error: null,
+        abort() { aborted = true; queueMicrotask(() => tx.onabort?.()); },
+        objectStore(name) {
+          const store = new MemoryStore(name, staged[name]);
+          const put = store.put.bind(store);
+          store.put = (value, key) => {
+            if (++writes === failPut) throw new Error("simulated put failure");
+            put(value, key);
+          };
+          return store;
+        }
+      };
       transactions.push({ names: selected, mode });
-      setTimeout(() => tx.oncomplete?.(), 0);
+      setTimeout(() => {
+        if (aborted) return;
+        if (abortAtCommit) { tx.error = new Error("simulated transaction failure"); tx.abort(); return; }
+        if (mode === "readwrite") selected.forEach(name => { stores[name] = staged[name]; });
+        tx.oncomplete?.();
+      }, 0);
       return tx;
     }
   };
@@ -78,6 +99,29 @@ test("recordAttempt uses one readwrite transaction for progress and history", as
   assert.deepEqual(db.transactions[0], { names: ["progress", "history"], mode: "readwrite" });
   assert.equal(db.stores.progress.size, 1);
   assert.equal(db.stores.history.size, 1);
+});
+
+test("batch answers roll back every store on synchronous or transaction failure", async () => {
+  const secondExercise = pack.exercises[1];
+  const attempts = [
+    { progress, history },
+    { progress: { ...emptyProgress(pack.id, secondExercise.id), attempts: 1 }, history: { ...history, id: "attempt-2", exerciseId: secondExercise.id } }
+  ];
+  for (const options of [{ failPut: 3 }, { abortAtCommit: true }]) {
+    const db = memoryDb(options);
+    db.stores.meta.set("app", { game: { xp: 10 } });
+    await assert.rejects(recordAttempts(db, attempts, { game: { xp: 50 } }), /failure/);
+    assert.equal(db.stores.progress.size, 0);
+    assert.equal(db.stores.history.size, 0);
+    assert.equal(db.stores.meta.get("app").game.xp, 10);
+    assert.equal(db.transactions.length, 1);
+  }
+  const db = memoryDb();
+  await recordAttempts(db, attempts, { game: { xp: 50 } });
+  assert.equal(db.transactions.length, 1);
+  assert.equal(db.stores.progress.size, 2);
+  assert.equal(db.stores.history.size, 2);
+  assert.equal(db.stores.meta.get("app").game.xp, 50);
 });
 
 test("game progress is committed atomically with an answered question", async () => {

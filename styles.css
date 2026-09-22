@@ -79,7 +79,7 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .game-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 18px; }
 .quest-hero { position: relative; overflow: hidden; min-height: 330px; padding: clamp(30px, 5vw, 58px); border-radius: 30px; color: #fff; background: linear-gradient(140deg, #19352d, #275c4c 64%, #317662); box-shadow: var(--shadow); }
 .quest-hero::after { content: ""; position: absolute; right: -70px; bottom: -120px; width: 270px; height: 270px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; box-shadow: 0 0 0 42px rgba(255,255,255,.035), 0 0 0 84px rgba(255,255,255,.02); }
-.quest-hero h1 { position: relative; z-index: 1; margin: 0; font-size: clamp(34px, 5vw, 58px); line-height: 1.08; letter-spacing: -.045em; }
+.quest-hero h2 { position: relative; z-index: 1; margin: 0; font-size: clamp(34px, 5vw, 58px); line-height: 1.08; letter-spacing: -.045em; }
 .quest-hero p:not(.eyebrow) { position: relative; z-index: 1; max-width: 600px; color: rgba(255,255,255,.76); line-height: 1.7; }
 .quest-hero .primary { position: relative; z-index: 2; margin-top: 10px; background: var(--accent); }
 .quest-hero .eyebrow { color: #ffb28e !important; }
@@ -496,3 +496,12 @@ button.wide { width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Study entry and resumable sessions. */
+.pack-grid + .game-hero { margin-top: 32px; }
+.resume-panel { display: grid; gap: 12px; padding: 18px; margin-bottom: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface-soft); }
+.resume-panel h2, .resume-panel p { margin: 0; }
+.resume-panel p { color: var(--muted); font-size: 13px; }
+.resume-panel button { text-align: left; white-space: normal; }
+.quest-hero .daily-pack-name { font-weight: 700; margin-bottom: 10px; }
+.quest-hero { padding-bottom: 90px; }
