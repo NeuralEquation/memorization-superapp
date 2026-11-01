@@ -505,3 +505,4 @@ button.wide { width: 100%; }
 .resume-panel button { text-align: left; white-space: normal; }
 .quest-hero .daily-pack-name { font-weight: 700; margin-bottom: 10px; }
 .quest-hero { padding-bottom: 90px; }
+.kobun-entry{display:flex;flex-direction:column;align-items:flex-start;gap:.45rem}.kobun-entry h2,.kobun-entry p{margin:0}.kobun-open{display:inline-block;margin-top:.6rem;padding:.7rem 1rem;border-radius:.75rem;background:#1c4a37;color:#fff;text-decoration:none;font-weight:700}.kobun-open:hover{background:#28634a}

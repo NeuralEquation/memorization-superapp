@@ -374,6 +374,7 @@ function renderHome() {
     <div class="section-head"><div><h1>教材を選ぶ</h1><p>学びたい教材から、すぐに始められます。</p></div><button class="ghost compact-action" data-action="navigate" data-view="manage">管理</button></div>
     <section class="pack-grid" aria-label="Active教材一覧">
       ${packs.length ? packs.map(packCard).join("") : `<div class="empty-state"><h2>Active教材がありません</h2><p>Archiveから戻すか、教材JSONを追加してください。</p><button class="primary" data-action="navigate" data-view="manage">管理を開く</button></div>`}
+      <article class="panel kobun-entry"><p class="eyebrow">JAPANESE CLASSICS</p><h2>古文単語 337</h2><p>単語カード、四択テスト、苦手語の復習。</p><a class="kobun-open" href="./kobun/">古文単語を開く →</a></article>
     </section>
     <section class="game-hero">
       <div class="quest-hero"><p class="eyebrow">DAILY QUEST</p><h2>正解をつないで、<br>今日のエリアを進める。</h2><p>未学習・誤答・復習期限を優先しながらXPとコンボを獲得します。</p>${nextPack ? `<p class="daily-pack-name">${escapeHtml(nextPack.title)}</p><button class="primary" data-action="start-game" data-pack-id="${escapeHtml(nextPack.id)}" data-mode="daily" aria-label="${escapeHtml(nextPack.title)}の今日の5問に挑戦">今日の5問に挑戦 <span>→</span></button>` : `<button class="primary" data-action="navigate" data-view="manage">教材を追加</button>`}<div class="hero-rewards"><span>✦ 正解でXP</span><span>⚡ 連続正解でコンボ</span><span>♜ ミスは後で再登場</span></div></div>
@@ -1200,7 +1201,7 @@ function renderManage() {
     <div class="page-head"><div><p class="eyebrow">PACK CONTROL</p><h1>教材とバックアップ</h1><p>追加・編集・Archive・Restore・複製をJSON中心で行います。不正なデータは保存前に拒否します。</p></div><button class="primary" data-action="new-pack">空の教材を作る</button></div>
     <section class="manage-grid">
       <article class="panel"><h2>教材JSON</h2><p>Pack JSONを検証・previewしてから追加します。同じIDがある場合は安全な複製を選べます。</p><div class="button-row"><label class="file-button">教材をimport<input id="import-pack" type="file" accept="application/json,.json"></label><button class="ghost" data-action="new-pack">JSON editor</button></div></article>
-      <article class="panel"><h2>完全バックアップ</h2><p>教材・進捗・回答履歴・設定を1つのJSONへ保存します。Restoreは全参照を検証してから一括置換します。</p><div class="button-row"><button class="primary" data-action="backup">Backup</button><label class="file-button">Restore<input id="restore-backup" type="file" accept="application/json,.json"></label></div></article>
+      <article class="panel"><h2>完全バックアップ</h2><p>Foundryの教材・進捗・回答履歴・設定を1つのJSONへ保存します。Restoreは全参照を検証してから一括置換します。古文単語の学習記録は含まれないため、古文側の「データと設定」で別に保存してください。</p><div class="button-row"><button class="primary" data-action="backup">Backup</button><label class="file-button">Restore<input id="restore-backup" type="file" accept="application/json,.json"></label></div></article>
     </section>
     <div class="section-head"><div><h2>Active</h2><p>通常学習と復習候補に含まれます。</p></div></div><section class="panel"><div class="manage-list">${active.length ? active.map(manageItem).join("") : "<p>Active教材はありません。</p>"}</div></section>
     <div class="section-head"><div><h2>Archive</h2><p>教材・進捗・履歴は保持し、通常学習から除外します。</p></div></div><section class="panel"><div class="manage-list">${archived.length ? archived.map(manageItem).join("") : "<p>Archive中の教材はありません。</p>"}</div></section>

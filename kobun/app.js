@@ -1,0 +1,77 @@
+(() => {
+  'use strict';
+  const E = window.KotonohaEngine, DATA = window.KotonohaData, KEY = 'kotonoha337.progress.v1', RECOVERY = 'kotonoha337.beforeRestore.v1';
+  const app = document.getElementById('app'), loading = document.getElementById('loading');
+  let words = [], progress = {}, view = 'home', blocked = false, raw = null;
+  let filter = {from:1,to:337,starred:false}, cards = {ids:[],index:0,revealed:false,example:false}, quiz = null;
+  const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const get = id => progress[id] || {star:false,rating:'',attempts:0,correct:0};
+  const $ = id => document.getElementById(id);
+  function notify(message) { const t=$('toast'); t.textContent=message; t.classList.add('show'); clearTimeout(notify.timer); notify.timer=setTimeout(()=>t.classList.remove('show'),3000); }
+  function backup() { return {format:'kotonoha-337',version:1,exportedAt:new Date().toISOString(),progress}; }
+  function save(next) {
+    if (blocked) { notify('保存を停止中です。設定からデータを確認してください'); return false; }
+    try { const text=JSON.stringify({format:'kotonoha-337',version:1,progress:next}); if (localStorage.getItem(KEY)!==raw) throw Error('別のタブで変更されました。再読み込みしてください。'); localStorage.setItem(KEY,text); raw=text; progress=next; return true; }
+    catch(e) { notify(e.message || '保存できませんでした'); return false; }
+  }
+  function update(id, change) { return save({...progress,[id]:{...get(id),...change}}); }
+  function word(id) { return words.find(w=>w.id===Number(id)); }
+  function selected() { return E.filterWords(words,filter.from,filter.to,filter.starred,progress); }
+  function startCards() { cards={ids:selected().map(w=>w.id),index:0,revealed:false,example:false}; }
+  function filterMarkup() { return `<div class="filters"><label class="field">番号から<input id="from" type="number" min="1" max="337" value="${filter.from}"></label><label class="field">番号まで<input id="to" type="number" min="1" max="337" value="${filter.to}"></label><label class="check"><input type="checkbox" id="starred" ${filter.starred?'checked':''}> ★ 苦手語だけ</label><button class="btn small" data-action="apply-filter">範囲を適用</button></div>`; }
+  function header(label,title,sub) { return `<div class="page-head"><div><div class="eyebrow">${label}</div><h1>${title}</h1><p>${sub}</p></div></div>`; }
+  function home() {
+    const rated=words.filter(w=>get(w.id).rating).length, known=words.filter(w=>get(w.id).rating==='known').length, stars=words.filter(w=>get(w.id).star).length;
+    return `<div class="page-head"><div><div class="eyebrow">YOUR STUDY SPACE</div><h1>おかえりなさい。</h1><p>今日も、自分のペースで。</p></div><span class="date">古文単語 337</span></div><div class="hero"><div class="hero-text"><div class="eyebrow">A LITTLE EVERY DAY</div><h2>ことばを覚えて、<br>古文をもっと自由に。</h2><p>一語ずつの積み重ねが、<br>物語を読む力になる。</p></div><div class="hero-art" aria-hidden="true"><div class="art-circle"></div><div class="art-card"><i></i><i></i><i></i><i></i></div><span class="art-leaf">✳</span></div></div><div class="section-heading"><h2>これまでの学習</h2><span>この端末の記録</span></div><div class="stats"><div class="stat"><div class="stat-label">学習した単語</div><div class="stat-value">${rated}<small>/ 337 語</small></div><div class="stat-note">カードで評価した語</div></div><div class="stat"><div class="stat-label">覚えた単語</div><div class="stat-value">${known}<small>語</small></div><div class="stat-note">「覚えた」と評価</div></div><div class="stat"><div class="stat-label">苦手な単語</div><div class="stat-value">${stars}<small>語</small></div><div class="stat-note">★をつけた語</div></div></div><div class="section-heading"><h2>学習をはじめる</h2><span>好きなところから</span></div><div class="features"><button class="feature" data-go="cards"><span class="feature-icon">▤</span><span class="feature-body"><h3>単語カード</h3><p>意味を見て、一語ずつ覚える</p></span><span class="arrow">↗</span></button><button class="feature" data-go="quiz"><span class="feature-icon">◉</span><span class="feature-body"><h3>四択テスト</h3><p>覚えたことを確かめる</p></span><span class="arrow">↗</span></button><button class="feature" data-go="weak"><span class="feature-icon">☆</span><span class="feature-body"><h3>苦手語を復習</h3><p>★をつけた単語をもう一度</p></span><span class="arrow">↗</span></button></div><div class="footer-note">毎日の小さな一歩が、力になる。</div>`;
+  }
+  function cardView() {
+    let out=header('FLASHCARDS','単語カード','意味を思い出してから、カードをめくりましょう。')+filterMarkup();
+    if(!cards.ids.length) return out+`<div class="panel empty">この範囲に単語がありません。<br>範囲や苦手語の指定を変えてください。</div>`;
+    const w=word(cards.ids[cards.index]); if(!w){startCards();return cardView();}
+    const s=get(w.id), ex=w.examples[0];
+    out+=`<div class="study-toolbar"><span>${cards.index+1} / ${cards.ids.length}　 ·　 No.${w.id}</span><span>${esc(w.pos.join('・'))}</span></div><div class="panel card"><button class="star ${s.star?'on':''}" data-action="star" data-id="${w.id}" aria-label="${s.star?'苦手語から外す':'苦手語に追加'}">${s.star?'★':'☆'}</button><div class="word-label">古文単語</div><div class="word">${esc(w.word)}</div><div class="word-kanji">${esc(w.kanji.join('・'))}</div>`;
+    if(cards.revealed) out+=`<div class="answer"><ol>${w.meanings.map(m=>`<li>${esc(m)}</li>`).join('')}</ol></div>${ex?`<button class="btn small" data-action="example" style="margin-top:16px">${cards.example?'例文を閉じる':'例文を見る'}</button>`:''}${cards.example&&ex?`<div class="example"><b>例文 ${esc(ex.source)}</b><p>${esc(ex.sentence)}</p><p class="trans">${esc(ex.translation)}</p></div>`:''}`;
+    else out+=`<button class="btn primary" data-action="reveal" style="margin-top:24px">意味を見る</button><div class="hint">まずは意味を思い出してみましょう</div>`;
+    out+='</div>'; if(cards.revealed) out+=`<div class="card-actions"><button class="btn rating unknown" data-action="rate" data-value="unknown">× まだ</button><button class="btn rating unsure" data-action="rate" data-value="unsure">△ あやふや</button><button class="btn rating known" data-action="rate" data-value="known">○ 覚えた</button></div>`;
+    return out+`<div class="row-actions"><button class="btn small" data-action="prev" ${cards.index===0?'disabled':''}>← 前へ</button><button class="btn small" data-action="next" ${cards.index>=cards.ids.length-1?'disabled':''}>次へ →</button>${cards.index===cards.ids.length-1?'<button class="btn small" data-action="repeat">もう一周 ↻</button>':''}</div>`;
+  }
+  function startQuiz() {
+    const pool=E.shuffle(selected()); const qs=[];
+    for(const w of pool){const choices=E.choicesFor(w,words); if(choices)qs.push({id:w.id,choices}); if(qs.length===10)break;}
+    quiz={questions:qs,index:0,answer:null,correct:0};
+  }
+  function quizView() {
+    let out=header('QUICK TEST','四択テスト','古文単語に合う意味を選びましょう。')+filterMarkup();
+    if(!quiz)return out+`<div class="panel empty">指定した範囲から、最大10問を出題します。<br>選択肢は全337語から作成します。<div class="row-actions"><button class="btn primary" data-action="start-quiz">テストをはじめる →</button></div></div>`;
+    if(!quiz.questions.length)return out+`<div class="panel empty">出題できる単語がありません。範囲を変更してください。<div class="row-actions"><button class="btn" data-action="reset-quiz">戻る</button></div></div>`;
+    if(quiz.index>=quiz.questions.length)return out+`<div class="panel empty"><div class="eyebrow">COMPLETE</div><h2 style="font-family:var(--serif);color:var(--ink)">おつかれさまでした。</h2><div class="stat-value">${quiz.correct} <small>/ ${quiz.questions.length} 問正解</small></div><p>間違えた単語は★に追加しました。</p><div class="row-actions"><button class="btn primary" data-action="start-quiz">もう一度</button><button class="btn" data-go="weak">苦手語を復習</button></div></div>`;
+    const q=quiz.questions[quiz.index],w=word(q.id),answered=quiz.answer!==null;
+    out+=`<div class="study-toolbar"><span>QUESTION ${quiz.index+1} / ${quiz.questions.length}</span><span>No.${w.id}</span></div><div class="panel"><div class="word-label">この単語の意味は？</div><div class="word" style="font-size:28px">${esc(w.word)}</div><div class="choice-list">${q.choices.map((c,i)=>`<button class="choice ${answered&&c.id===w.id?'correct':''} ${answered&&quiz.answer===c.id&&c.id!==w.id?'wrong':''}" data-action="answer" data-id="${c.id}" ${answered?'disabled':''}><strong>${String.fromCharCode(65+i)}.</strong>　${esc(c.label)}</button>`).join('')}<button class="choice" data-action="answer" data-id="0" ${answered?'disabled':''}>わからない</button></div>`;
+    if(answered)out+=`<div class="feedback ${quiz.answer===w.id?'good':'bad'}">${quiz.answer===w.id?'正解です。':'正解を確認して、もう一度覚えましょう。'}</div><div class="row-actions"><button class="btn primary" data-action="quiz-next">${quiz.index===quiz.questions.length-1?'結果を見る':'次の問題へ'} →</button></div>`;
+    return out+'</div>';
+  }
+  function wordsView() {return header('WORD LIST','単語一覧','見出しや意味で検索できます。')+`<div class="list-toolbar"><input id="search" class="search" type="search" placeholder="単語・漢字・意味を検索" aria-label="単語を検索"><label class="check"><input id="list-stars" type="checkbox"> ★ 苦手語だけ</label></div><div id="list-count" class="study-toolbar"></div><div class="word-list" id="word-list"></div>`;}
+  function renderList() {const query=($('search')?.value||'').trim().normalize('NFKC').toLowerCase(),stars=$('list-stars')?.checked;const rows=words.filter(w=>(!stars||get(w.id).star)&&(!query||[w.word,...w.variants,...w.kanji,...w.meanings].join(' ').normalize('NFKC').toLowerCase().includes(query)));$('list-count').textContent=`${rows.length} 語`;$('word-list').innerHTML=rows.length?rows.map(w=>`<div class="list-item"><span class="list-num">${String(w.id).padStart(3,'0')}</span><span class="list-word">${esc(w.word)}</span><span class="list-meaning">${esc(w.meanings.join(' / '))}</span><button class="list-star ${get(w.id).star?'on':''}" data-action="list-star" data-id="${w.id}" aria-label="${get(w.id).star?'苦手語から外す':'苦手語に追加'}">${get(w.id).star?'★':'☆'}</button></div>`).join(''):'<div class="panel empty">該当する単語はありません。</div>';}
+  function settingsView() {return header('YOUR DATA','データと設定','学習記録を大切に保管できます。')+`<div class="panel"><div class="settings-block"><h2>学習記録をバックアップ</h2><p>苦手語・カードの評価・テストの記録をJSONファイルに保存します。教材本文は含まれません。元の教材ファイルも大切に保管してください。</p><button class="btn primary" data-action="export">JSONを書き出す</button></div><div class="settings-block"><h2>バックアップから復元</h2><p>復元すると、この端末の現在の学習記録は選んだファイルの内容に置き換わります。</p><input type="file" id="import-file" accept="application/json,.json" aria-label="バックアップファイル"><button class="btn" data-action="import">内容を確認して復元</button></div><div class="settings-block"><h2>このアプリについて</h2><p>教材と学習記録は、この端末のブラウザー内に保存されます。Foundryのバックアップには古文の記録は含まれません。</p><p>別の端末に自動では同期されません。大切な記録は定期的にバックアップしてください。</p><p class="warning">${blocked?'保存データを読み込めなかったため、通常の保存を停止しています。正しいバックアップを復元してください。':'ブラウザーのデータを削除すると、学習記録も消えることがあります。'}</p></div></div>`;}
+  function render() { document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view)); app.innerHTML=view==='home'?home():view==='cards'?cardView():view==='quiz'?quizView():view==='words'?wordsView():settingsView(); if(view==='words')renderList(); }
+  function go(next) { if(!words.length){notify('先に教材を取り込んでください');return;} if(next==='weak'){filter.starred=true;next='cards';} if(next==='cards')startCards(); if(next==='quiz')quiz=null; view=next;render();window.scrollTo(0,0); }
+  document.addEventListener('click',async e=>{
+    const v=e.target.closest('[data-view]'); if(v){e.preventDefault();go(v.dataset.view);return;}
+    const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return;}
+    const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;
+    if(a==='import-dataset'){const file=$('dataset-file')?.files[0];if(!file){notify('教材ファイルを選んでください');return;}b.disabled=true;try{if(file.size>4_000_000)throw Error('教材ファイルが大きすぎます');await DATA.importOnce(JSON.parse(await file.text()));notify('教材を取り込みました');await init();}catch(err){notify(err.message||'教材を取り込めませんでした');b.disabled=false;}return;}
+    if(a==='apply-filter') {const f=Number($('from').value),t=Number($('to').value);if(!Number.isInteger(f)||!Number.isInteger(t)||f<1||t>337||f>t){notify('1〜337の正しい範囲を入力してください');return;}filter={from:f,to:t,starred:$('starred').checked};if(view==='cards')startCards();else quiz=null;render();}
+    if(a==='reveal'){cards.revealed=true;render();} if(a==='example'){cards.example=!cards.example;render();}
+    if(a==='prev'||a==='next'){cards.index=Math.max(0,Math.min(cards.ids.length-1,cards.index+(a==='prev'?-1:1)));cards.revealed=false;cards.example=false;render();} if(a==='repeat'){startCards();render();}
+    if(a==='star'||a==='list-star'){const id=Number(b.dataset.id);if(update(id,{star:!get(id).star})){if(a==='list-star')renderList();else render();}}
+    if(a==='rate'){const id=cards.ids[cards.index],rating=b.dataset.value;if(update(id,{rating,star:rating==='unknown'?true:get(id).star})){if(cards.index<cards.ids.length-1){cards.index++;cards.revealed=false;cards.example=false;}else notify('最後の単語です');render();}}
+    if(a==='start-quiz'){startQuiz();render();} if(a==='reset-quiz'){quiz=null;render();}
+    if(a==='answer'&&quiz&&quiz.answer===null){const q=quiz.questions[quiz.index],id=q.id,ans=Number(b.dataset.id),correct=ans===id,s=get(id);if(update(id,{attempts:s.attempts+1,correct:s.correct+(correct?1:0),star:correct?s.star:true})){quiz.answer=ans;if(correct)quiz.correct++;render();}}
+    if(a==='quiz-next'){quiz.index++;quiz.answer=null;render();}
+    if(a==='export'){const blob=new Blob([JSON.stringify(backup(),null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),link=document.createElement('a');link.href=u;link.download=`kotonoha337-backup-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+    if(a==='import'){const file=$('import-file').files[0];if(!file){notify('ファイルを選んでください');return;}try{if(file.size>2_000_000)throw Error('ファイルが大きすぎます');const clean=E.validateBackup(JSON.parse(await file.text()),words.map(w=>w.id));if(!confirm(`${Object.keys(clean).length}語の記録で、この端末の記録を置き換えます。復元しますか？`))return;const previous=localStorage.getItem(KEY);if(previous!==raw)throw Error('別のタブで変更されました。再読み込みしてください。');if(previous!==null)localStorage.setItem(RECOVERY,previous);const text=JSON.stringify({format:'kotonoha-337',version:1,progress:clean});localStorage.setItem(KEY,text);raw=text;progress=clean;blocked=false;notify('バックアップを復元しました');render();}catch(err){notify(err.message||'復元できませんでした');}}
+  });
+  document.addEventListener('input',e=>{if(e.target.id==='search')renderList();});document.addEventListener('change',e=>{if(e.target.id==='list-stars')renderList();});
+  async function init(){try{const data=await DATA.load();loading.hidden=true;app.hidden=false;if(!data){app.innerHTML=header('GET STARTED','教材を取り込む','教材はこの端末に保存されます。')+`<div class="panel"><p>337語の教材JSONを選んでください。教材はネットワークに送信されません。</p><p class="hint">対応形式：個人用に用意した <code>words.json</code>（337件）</p><input id="dataset-file" type="file" accept="application/json,.json" aria-label="教材ファイル"><button class="btn primary" data-action="import-dataset">教材を取り込む</button><p class="hint">取り込み後は、この端末でオフライン学習できます。</p></div>`;}else{words=DATA.validate(data);try{raw=localStorage.getItem(KEY);if(raw!==null)progress=E.validateBackup(JSON.parse(raw),words.map(w=>w.id));}catch{blocked=true;progress={};}render();if(blocked)notify('保存データを読み込めません。設定を確認してください');}if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>notify('オフライン準備ができませんでした'));}catch(err){loading.hidden=false;app.hidden=true;loading.textContent=`教材を開けませんでした：${err.message}`;}}
+  init();
+})();

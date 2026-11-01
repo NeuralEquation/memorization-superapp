@@ -1,4 +1,4 @@
-const CACHE_NAME = "memory-foundry-shell-v1.6.2";
+const CACHE_NAME = "memory-foundry-shell-v1.6.2-kobun-1";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,7 +14,9 @@ const APP_SHELL = [
   "./data/builtin-packs.json?v=1.6.2",
   "./manifest.webmanifest?v=1.6.2",
   "./icons/icon-192.png?v=1.6.2",
-  "./icons/icon-512.png?v=1.6.2"
+  "./icons/icon-512.png?v=1.6.2",
+  "./kobun/", "./kobun/index.html", "./kobun/style.css", "./kobun/engine.js", "./kobun/data-store.js", "./kobun/app.js",
+  "./kobun/manifest.webmanifest", "./kobun/icon.svg", "./kobun/icon-192.png", "./kobun/icon-512.png"
 ];
 
 self.addEventListener("install", event => {
@@ -22,7 +24,14 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil((async () => {
+    const ownIndex = new URL('./index.html', self.registration.scope).href;
+    for (const key of await caches.keys()) {
+      if (!key.startsWith('memory-foundry-shell-') || key === CACHE_NAME) continue;
+      if (await (await caches.open(key)).match(ownIndex)) await caches.delete(key);
+    }
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener("message", event => {
