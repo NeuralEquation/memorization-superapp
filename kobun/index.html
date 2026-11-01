@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f7f3"><meta name="description" content="337語を自分のペースで覚える古文単語帳">
+  <title>ことのは｜古文単語337</title><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="top"><div class="top-inner"><a class="brand" href="#home" aria-label="ことのは ホーム"><span class="brand-mark">こ</span><span>ことのは<small>古文単語 337</small></span></a><a class="foundry-back" href="../">← 暗記Foundry</a><span class="local-badge"><span></span> この端末に保存</span></div></header>
+<main class="layout">
+ <aside class="sidebar"><div class="side-title">学習メニュー</div><nav class="nav" aria-label="学習メニュー"><button data-view="home" class="active"><span>⌂</span> ホーム</button><button data-view="cards"><span>▤</span> 単語カード</button><button data-view="quiz"><span>◉</span> 四択テスト</button><button data-view="words"><span>≡</span> 単語一覧</button></nav><div class="side-bottom"><span class="side-dot">✳</span><p>少しずつ、<br>ことばを自分のものに。</p></div><button class="backup-link" data-view="settings">⚙　データと設定</button></aside>
+ <section class="content"><div id="loading" class="loading">単語を読み込んでいます…</div><div id="app" hidden></div></section>
+</main>
+<nav class="mobile-nav" aria-label="学習メニュー"><button data-view="home" class="active"><span>⌂</span>ホーム</button><button data-view="cards"><span>▤</span>カード</button><button data-view="quiz"><span>◉</span>テスト</button><button data-view="words"><span>≡</span>一覧</button><button data-view="settings"><span>⚙</span>設定</button></nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="./engine.js"></script><script src="./data-store.js"></script><script src="./app.js"></script>
+</body></html>
